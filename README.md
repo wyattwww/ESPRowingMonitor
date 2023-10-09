@@ -71,6 +71,8 @@ ESP Rowing Monitor includes a WebSocket server that sends calculated metrics to 
     avgStrokePower: number;
     dragFactor: number;
     handleForces: Array<number>;
+    elapsedTime: number;
+    totalCalories: number;
 }
 ```
 

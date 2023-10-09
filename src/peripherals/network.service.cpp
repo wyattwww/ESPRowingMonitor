@@ -119,6 +119,7 @@ void NetworkService::notifyClients(const RowingDataModels::RowingMetrics rowingM
     response.append(",\"bleServiceFlag\":" + to_string(static_cast<unsigned char>(bleServiceFlag)));
     response.append(",\"logLevel\":" + to_string(static_cast<unsigned char>(logLevel)));
     response.append(",\"revTime\":" + to_string(rowingMetrics.lastRevTime));
+    response.append(",\"elapsedTime\":" + to_string(rowingMetrics.elapsedTime));
     response.append(",\"distance\":" + to_string(rowingMetrics.distance));
     response.append(",\"strokeTime\":" + to_string(rowingMetrics.lastStrokeTime));
     response.append(",\"strokeCount\":" + to_string(rowingMetrics.strokeCount));
@@ -126,6 +127,7 @@ void NetworkService::notifyClients(const RowingDataModels::RowingMetrics rowingM
     response.append(",\"driveDuration\":" + to_string(rowingMetrics.driveDuration));
     response.append(",\"recoveryDuration\":" + to_string(rowingMetrics.recoveryDuration));
     response.append(",\"dragFactor\":" + to_string(rowingMetrics.dragCoefficient * 1e6));
+    response.append(",\"totalCalories\":" + to_string(rowingMetrics.totalCalories));
     response.append(",\"handleForces\": [");
 
     for (auto const &handleForce : rowingMetrics.driveHandleForces)
@@ -154,7 +156,7 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
 
         if (request.size() < 3)
         {
-            Log.traceln("Invalid request: %s", request.c_str());
+            Log.traceln("Invalid request size: %s", request.c_str());
         }
 
         auto const requestOpCommand = request.substr(1, request.size() - 2);
@@ -165,7 +167,7 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
 
         if (opCommand.size() != 2)
         {
-            Log.traceln("Invalid request: %s", request.c_str());
+            Log.traceln("Invalid request opCommand size: %d, %s", opCommand.size(), requestOpCommand.c_str());
             return;
         }
 
@@ -193,9 +195,18 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
         {
             Log.infoln("Change BLE Service");
 
-            if (opCommand.size() == 2 && opCommand[1] >= 0 && opCommand[1] <= 1)
+            if (opCommand.size() == 2 && opCommand[1] >= 0 && opCommand[1] <= 2)
             {
-                Log.infoln("New BLE Service: %s", opCommand[1] == static_cast<unsigned char>(BleServiceFlag::CscService) ? "CSC" : "CPS");
+                if( opCommand[1] == static_cast<unsigned char>(BleServiceFlag::CscService) ) {
+                    Log.infoln("New BLE Service: %s", "CSC");
+                }
+                else if( opCommand[1] == static_cast<unsigned char>(BleServiceFlag::CpsService) ) {
+                    Log.infoln("New BLE Service: %s", "CPS");
+                }
+                else if( opCommand[1] == static_cast<unsigned char>(BleServiceFlag::FtmsService) ) {
+                    Log.infoln("New BLE Service: %s", "FTMS");
+                }                
+                
                 eepromService.setBleServiceFlag(static_cast<BleServiceFlag>(opCommand[1]));
 
                 Log.verboseln("Restarting device");

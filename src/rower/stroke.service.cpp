@@ -96,8 +96,21 @@ void StrokeService::calculateAvgStrokePower()
     avgStrokePower = dragCoefficient * pow((recoveryTotalAngularDisplacement + driveTotalAngularDisplacement) / ((driveDuration + recoveryDuration) / 1e6), 3);
 }
 
+unsigned long long StrokeService::getElapsedTime() {
+    if( startTime == 0 ) {
+        //Log.traceln("Not started yet");
+        return 0;
+    }
+    unsigned long long elapsed = (millis()-startTime);
+    //Log.traceln("Elapsed:  %u", elapsed);
+    return elapsed / 1e3L;
+}
+
 void StrokeService::driveStart()
 {
+    if( startTime == 0 ) {
+        startTime = millis();
+    }
     cyclePhase = CyclePhase::Drive;
     driveStartTime = rowingTotalTime;
     driveStartAngularDisplacement = rowingTotalAngularDisplacement;
@@ -164,10 +177,44 @@ void StrokeService::recoveryEnd()
     {
         revTime = rowingTotalTime;
     }
+
+    auto const secInMicroSec = 1e6;
+    auto const rowTimeInSec = rowingTotalTime/secInMicroSec;
+
+    cycleDuration.push(driveDuration);
+    cyclePower.push(avgStrokePower);
+
+    // based on:   http://eodg.atm.ox.ac.uk/user/dudhia/rowing/physics/ergometer.html#section11
+    if( cyclePower.size() >= Configurations::numOfPhasesForAveragingScreenData ) 
+    {
+        strokeCalories = (4 * cyclePower.median() + 350) * (cycleDuration.median()) / 4200;
+        unsigned int totalCal = calories.yAtSeriesEnd() + strokeCalories;
+        calories.push( rowTimeInSec, totalCal );
+
+        Log.traceln("StrokeCal: %u, totalCal: %u", strokeCalories, totalCal);
+    
+        totalCalories = calories.yAtSeriesEnd() > 0 ? calories.yAtSeriesEnd() / secInMicroSec : 0; // kcal
+        totalCaloriesPerMinute = rowTimeInSec > 60 ? caloriesPerPeriod(rowTimeInSec - 60, rowTimeInSec) / secInMicroSec : caloriesPerPeriod(0, 60) / secInMicroSec;
+        totalCaloriesPerHour = rowTimeInSec > 3600 ? caloriesPerPeriod(rowTimeInSec - 3600, rowTimeInSec) / secInMicroSec : caloriesPerPeriod(0, 3600) / secInMicroSec;
+    }
+    else {
+        totalCalories = 0;
+        totalCaloriesPerMinute = 0;
+        totalCaloriesPerHour = 0;
+    }
 }
+
+unsigned int StrokeService::caloriesPerPeriod(unsigned long long periodBegin, unsigned long long periodEnd) 
+{
+    unsigned int beginCalories = calories.projectX(periodBegin);
+    unsigned int endCalories = calories.projectX(periodEnd);
+    return (endCalories - beginCalories);
+  }
 
 RowingDataModels::RowingMetrics StrokeService::getData()
 {
+    unsigned long long elapsed = getElapsedTime();
+
     return RowingDataModels::RowingMetrics{
         .distance = distance,
         .lastRevTime = revTime,
@@ -177,7 +224,11 @@ RowingDataModels::RowingMetrics StrokeService::getData()
         .recoveryDuration = recoveryDuration,
         .avgStrokePower = avgStrokePower,
         .dragCoefficient = dragCoefficient,
-        .driveHandleForces = driveHandleForces};
+        .driveHandleForces = driveHandleForces,
+        .elapsedTime = elapsed,
+        .totalCalories = totalCalories,
+        .totalCaloriesPerHour = totalCaloriesPerHour,
+        .totalCaloriesPerMinute = totalCaloriesPerMinute};
 }
 
 void StrokeService::processData(const RowingDataModels::FlywheelData data)

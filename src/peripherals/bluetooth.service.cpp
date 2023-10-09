@@ -63,7 +63,16 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
 
         if (message.length() == 2 && message[1] >= 0 && message[1] <= 1)
         {
-            Log.infoln("New BLE Service: %s", message[1] == static_cast<unsigned char>(BleServiceFlag::CscService) ? "CSC" : "CPS");
+            if( message[1] == static_cast<unsigned char>(BleServiceFlag::CscService) ) {
+                Log.infoln("New BLE Service: %s", "CSC");
+            }
+            else if( message[1] == static_cast<unsigned char>(BleServiceFlag::CpsService) ) {
+                Log.infoln("New BLE Service: %s", "CPS");
+            }
+            else if( message[1] == static_cast<unsigned char>(BleServiceFlag::FtmsService) ) {
+                Log.infoln("New BLE Service: %s", "FTMS");
+            }
+
             bleService.eepromService.setBleServiceFlag(static_cast<BleServiceFlag>(message[1]));
             array<uint8_t, 3> temp = {
                 static_cast<unsigned char>(PSCOpCodes::ResponseCode),
@@ -141,6 +150,10 @@ void BluetoothService::notifyBattery(const unsigned char batteryLevel) const
 
 void BluetoothService::notifyDragFactor(const unsigned short distance, const unsigned char dragFactor) const
 {
+    if( dragFactorCharacteristic == nullptr ) 
+    {
+        return;
+    }
     std::string value = "DF=" + to_string(dragFactor) + ", Dist=" + to_string(distance);
     dragFactorCharacteristic->setValue(value);
     if (dragFactorCharacteristic->getSubscribedCount() > 0)
@@ -237,11 +250,100 @@ void BluetoothService::notifyPsc(const unsigned short revTime, const unsigned in
     }
 }
 
+void BluetoothService::notifyFtms(const unsigned short strokeRate, const unsigned short strokeCount, 
+                                    const long long distance, const float pace, const short power, const short caloriesTotal, 
+                                    const short caloriesPerHour, const short caloriesPerMin, const long long elapsedTime) const
+{
+    if (ftmsRowerDataCharacteristic->getSubscribedCount() > 0)
+    {
+        // execution time: 0-1 microsec
+        // auto start = micros();
+        array<uint8_t, 19> temp = {
+            // Field flags as defined in the Bluetooth Documentation
+            // Stroke Rate (default), Stroke Count (default), Total Distance (2), Instantaneous Pace (3),
+            // Instantaneous Power (5), Total / Expended Energy (8), Elapsed Time (11)
+            // todo: might add: Average Stroke Rate (1), Average Pace (4), Average Power (6), Heart Rate (9), 
+            // Remaining Time (12)
+            // 00101100
+            static_cast<unsigned char>(0x2c),
+            // 00001001
+            static_cast<unsigned char>(0x09),
+
+            // see https://www.bluetooth.com/specifications/specs/gatt-specification-supplement-3/
+            // for some of the data types
+            // Stroke Rate in stroke/minute, value is multiplied by 2 to have a .5 precision
+            static_cast<unsigned char>(strokeRate*2),
+
+            // Stroke Count
+            static_cast<unsigned char>(strokeCount),
+            static_cast<unsigned char>(strokeCount >> 8),
+
+            // Total Distance in meters
+            static_cast<unsigned char>(distance),
+            static_cast<unsigned char>(distance >> 8),
+            static_cast<unsigned char>(distance >> 16),
+            
+            // Instantaneous Pace in seconds/500m
+            // if split is infinite (i.e. while pausing), should use the highest possible number (0xFFFF)
+            // todo: eventhough mathematically correct, setting 0xFFFF (65535s) causes some ugly spikes
+            // in some applications which could shift the axis (i.e. workout diagrams in MyHomeFit)
+            // so instead for now we use 0 here
+            static_cast<unsigned char>(lround(pace)),
+            static_cast<unsigned char>(lround(pace) >> 8),
+
+            // Instantaneous Power in watts
+            static_cast<unsigned char>(power),
+            static_cast<unsigned char>(power >> 8),
+
+            // Energy in kcal
+            // Total energy in kcal
+            static_cast<unsigned char>(caloriesTotal),
+            static_cast<unsigned char>(caloriesTotal >> 8),
+
+            static_cast<unsigned char>(caloriesPerHour),
+            static_cast<unsigned char>(caloriesPerHour >> 8),
+
+            static_cast<unsigned char>(caloriesPerMin),
+            
+            // Elapsed Time: Seconds with a resolution of 1
+            static_cast<unsigned char>(elapsedTime),
+        };
+
+        // auto stop = micros();
+        // Serial.print("data calc: ");
+        // Serial.println(stop - start);
+
+        // execution time: 28-35 microsec
+        // auto start = micros();
+        ftmsRowerDataCharacteristic->setValue(temp);
+        // auto stop = micros();
+        // Serial.print("set value: ");
+        // Serial.println(stop - start);
+
+        // execution time: 1000-1600 microsec
+        // start = micros();
+        ftmsRowerDataCharacteristic->notify();
+        // stop = micros();
+        // Serial.print("notify: ");
+        // Serial.println(stop - start);
+    }
+}
+
 void BluetoothService::setupBleDevice()
 {
     Log.verboseln("Initializing BLE device");
 
-    auto const deviceName = Configurations::deviceName + "(" + std::string(eepromService.getBleServiceFlag() == BleServiceFlag::CscService ? "CSC)" : "CPS)");
+    std::string deviceName = "ErgMonitor (";
+    if( eepromService.getBleServiceFlag() == BleServiceFlag::CscService ) {
+        deviceName += std::string( "CSC)" );
+    }
+    else if( eepromService.getBleServiceFlag() == BleServiceFlag::CpsService ) {
+        deviceName += std::string( "CPS)" );
+    }
+    else if( eepromService.getBleServiceFlag() == BleServiceFlag::FtmsService ) {
+        deviceName += std::string( "FTMS)" );
+    }   
+     
     NimBLEDevice::init(deviceName);
     NimBLEDevice::setPower(ESP_PWR_LVL_N6);
 
@@ -260,7 +362,16 @@ void BluetoothService::setupServices()
     auto *batteryService = server->createService(batterySvcUuid);
     auto *deviceInfoService = server->createService(deviceInfoSvcUuid);
 
-    auto *measurementService = eepromService.getBleServiceFlag() == BleServiceFlag::CscService ? setupCscServices(server) : setupPscServices(server);
+    NimBLEService *measurementService = nullptr;
+    if( eepromService.getBleServiceFlag() == BleServiceFlag::CscService ) {
+        measurementService = setupCscServices(server);
+    }
+    else if( eepromService.getBleServiceFlag() == BleServiceFlag::CpsService ) {
+        measurementService = setupPscServices(server);
+    }
+    else if( eepromService.getBleServiceFlag() == BleServiceFlag::FtmsService ) {
+        measurementService = setupFtmsServices(server);
+    } 
 
     Log.verboseln("Setting up BLE Characteristics");
 
@@ -268,16 +379,17 @@ void BluetoothService::setupServices()
 
     deviceInfoService
         ->createCharacteristic(manufacturerNameSvcUuid, NIMBLE_PROPERTY::READ)
-        ->setValue("ZOCO BODY FIT");
+        ->setValue("Swell City");
     deviceInfoService
         ->createCharacteristic(modelNumberSvcUuid, NIMBLE_PROPERTY::READ)
-        ->setValue("AR-C2");
+        ->setValue("Swell Monitor");
     deviceInfoService
         ->createCharacteristic(serialNumberSvcUuid, NIMBLE_PROPERTY::READ)
-        ->setValue("20230621");
+<<<<<<< HEAD
+        ->setValue("2023115");
     deviceInfoService
         ->createCharacteristic(softwareNumberSvcUuid, NIMBLE_PROPERTY::READ)
-        ->setValue("4.1.0");
+        ->setValue("4.1.0.1");
 
     Log.verboseln("Starting BLE Service");
 
@@ -330,6 +442,30 @@ NimBLEService *BluetoothService::setupPscServices(NimBLEServer *const server)
     return pscService;
 }
 
+NimBLEService *BluetoothService::setupFtmsServices(NimBLEServer *const server)
+{
+    Log.infoln("Setting up FitnessMachine Profile");
+
+    auto *ftmsService = server->createService(fitnessServiceUuid);
+
+    //0x2ACC
+    ftmsMachineFeatureCharacteristic = ftmsService->createCharacteristic(fitnessMachineFeatureCharacteristicUuid, NIMBLE_PROPERTY::READ);
+
+    //0x2AD1
+    ftmsRowerDataCharacteristic = ftmsService->createCharacteristic(rowerDataCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY);
+
+    //0x2ADA
+    ftmsMachineStatusCharacteristic = ftmsService->createCharacteristic(fitnessMachineStatusCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+
+    //0x2AD3
+    ftmsTrainingStatusCharacteristic = ftmsService->createCharacteristic(fitnessTrainingStatusCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+    
+    //0x2AD9
+    ftmsService->createCharacteristic(fitnessControlCharacteristicUuid, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::INDICATE)->setCallbacks(&controlPointCallbacks);
+    
+    return ftmsService;
+}
+
 void BluetoothService::setupAdvertisement() const
 {
     auto *pAdvertising = NimBLEDevice::getAdvertising();
@@ -342,5 +478,10 @@ void BluetoothService::setupAdvertisement() const
     {
         pAdvertising->setAppearance(bleAppearanceCyclingSpeedCadence);
         pAdvertising->addServiceUUID(cyclingSpeedCadenceSvcUuid);
+    }
+    if (eepromService.getBleServiceFlag() == BleServiceFlag::FtmsService)
+    {
+        pAdvertising->setAppearance(bleAppearanceFitnessMachine);
+        pAdvertising->addServiceUUID(fitnessServiceUuid);
     }
 }

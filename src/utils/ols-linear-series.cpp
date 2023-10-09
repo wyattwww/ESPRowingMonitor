@@ -30,6 +30,17 @@ Configurations::precision OLSLinearSeries::yAtSeriesBegin() const
     return sumY[0];
 }
 
+Configurations::precision OLSLinearSeries::yAtSeriesEnd() const
+{
+    if (sumY.size() > 0) {
+      return sumY[sumY.size() - 1];
+    } 
+    else 
+    {
+      return 0;
+    }
+}
+
 Configurations::precision OLSLinearSeries::slope() const
 {
     if (sumX.size() >= 2 && sumX.sum() > 0)
@@ -39,6 +50,17 @@ Configurations::precision OLSLinearSeries::slope() const
 
     return 0.0;
 }
+
+Configurations::precision OLSLinearSeries::intercept() const
+{
+    if (sumX.size() >= 2 && sumX.sum() > 0 && sumY.size() >= 2 && sumY.sum() > 0)
+    {
+        return ((sumY.sum() - (slope() * sumX.sum())) / sumX.size());
+    }
+
+    return 0.0;
+}
+
 
 Configurations::precision OLSLinearSeries::goodnessOfFit() const
 {
@@ -54,6 +76,17 @@ Configurations::precision OLSLinearSeries::goodnessOfFit() const
 
     return 0;
 }
+
+Configurations::precision OLSLinearSeries::projectX(Configurations::precision x) {
+    if (sumX.size() >= 2) 
+    {
+      return (slope() * x) + intercept();
+    } 
+    else 
+    {
+      return 0;
+    }
+  }
 
 unsigned char OLSLinearSeries::size() const
 {

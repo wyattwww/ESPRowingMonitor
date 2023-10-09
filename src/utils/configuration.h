@@ -45,6 +45,7 @@ public:
     static unsigned int const strokeDebounceTime = STROKE_DEBOUNCE_TIME * 1000;
     static unsigned char const impulseDataArrayLength = IMPULSE_DATA_ARRAY_LENGTH;
     // static unsigned char const rotationSmoothingFactor = ROTATION_SMOOTHING_FACTOR;
+    static unsigned char const numOfPhasesForAveragingScreenData = 6;
 
     // Network settings
     static inline string const ssid = TOSTRING(LOCAL_SSID);

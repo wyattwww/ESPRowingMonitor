@@ -47,6 +47,13 @@ class StrokeService
 
     Configurations::precision totalAngularDisplacement = 0;
 
+    unsigned long long startTime = 0;
+    unsigned int strokeCalories = 0;
+    unsigned int totalCalories = 0;
+    unsigned int totalCaloriesPerHour = 0;
+    unsigned int totalCaloriesPerMinute = 0;
+
+
     // advance metrics
     Configurations::precision currentAngularVelocity = 0;
     Configurations::precision currentAngularAcceleration = 0;
@@ -61,6 +68,10 @@ class StrokeService
     OLSLinearSeries recoveryDeltaTimes = OLSLinearSeries();
     TSQuadraticSeries angularDistances = TSQuadraticSeries(Configurations::impulseDataArrayLength);
 
+    Series cyclePower = Series(Configurations::numOfPhasesForAveragingScreenData);
+    Series cycleDuration = Series(Configurations::numOfPhasesForAveragingScreenData);
+    OLSLinearSeries calories = OLSLinearSeries();
+
     bool isFlywheelUnpowered() const;
     bool isFlywheelPowered() const;
     void calculateDragCoefficient();
@@ -72,6 +83,10 @@ class StrokeService
     void recoveryStart();
     void recoveryUpdate();
     void recoveryEnd();
+    
+    unsigned long long getElapsedTime();
+
+    unsigned int caloriesPerPeriod(unsigned long long periodBegin, unsigned long long periodEnd);
 
 public:
     StrokeService();

@@ -22,6 +22,8 @@ class BluetoothService
     EEPROMService &eepromService;
     ControlPointCallbacks controlPointCallbacks;
 
+    //CSC
+
     static unsigned char constexpr sensorLocationFlag = SensorLocations::Other;
 
     static unsigned short constexpr cscFeaturesFlag = CSCFeaturesFlags::CrankRevolutionDataSupported |
@@ -63,10 +65,37 @@ class BluetoothService
     NimBLECharacteristic *pscMeasurementCharacteristic = nullptr;
     NimBLECharacteristic *dragFactorCharacteristic = nullptr;
 
+    //FTMS
+    static unsigned short const fitnessServiceUuid = 0x1826;
+	static unsigned short const fitnessMachineFeatureCharacteristicUuid = 0x2ACC;
+	static unsigned short const fitnessMachineStatusCharacteristicUuid = 0x2ADA;
+	static unsigned short const rowerDataCharacteristicUuid = 0x2AD1;
+	static unsigned short const fitnessControlCharacteristicUuid = 0x2AD9;
+    static unsigned short const fitnessTrainingStatusCharacteristicUuid = 0x2AD3;
+
+    static unsigned short const bleAppearanceFitnessMachine = 1158;
+
+    static unsigned short const userDataServiceUUID = 0x181C;
+	static unsigned short const weightDataCharacteristicUUID = 0x2A98;
+
+	static unsigned short const reqOpCode = 0x00;
+	static unsigned short const resetOpCode = 0x01;
+	static unsigned short const startResumeOpCode = 0x07;
+	static unsigned short const stopPauseOpCode = 0x08;
+	static unsigned short const weightOpCode = 0x12;
+	static unsigned short const successOpCode = 0x80;
+
+    NimBLECharacteristic *ftmsMachineFeatureCharacteristic = nullptr;
+    NimBLECharacteristic *ftmsTrainingStatusCharacteristic = nullptr;
+    NimBLECharacteristic *ftmsMachineStatusCharacteristic = nullptr;
+    NimBLECharacteristic *ftmsRowerDataCharacteristic = nullptr;
+    NimBLECharacteristic *ftmsControlCharacteristic = nullptr;
+
     void setupBleDevice();
     void setupServices();
     NimBLEService *setupCscServices(NimBLEServer *server);
     NimBLEService *setupPscServices(NimBLEServer *server);
+    NimBLEService *setupFtmsServices(NimBLEServer *server);
     void setupAdvertisement() const;
 
 public:
@@ -78,6 +107,9 @@ public:
     void notifyBattery(unsigned char batteryLevel) const;
     void notifyCsc(unsigned short revTime, unsigned int revCount, unsigned short strokeTime, unsigned short strokeCount) const;
     void notifyPsc(unsigned short revTime, unsigned int revCount, unsigned short strokeTime, unsigned short strokeCount, short avgStrokePower) const;
+    void notifyFtms(const unsigned short strokeRate, const unsigned short strokeCount,
+                                    const long long distance, const float pace, const short power, const short caloriesTotal, 
+                                    const short caloriesPerHour, const short caloriesPerMin, const long long elapsedTime) const;
     void notifyDragFactor(unsigned short distance, unsigned char dragFactor) const;
     static bool isAnyDeviceConnected();
 };

@@ -30,7 +30,7 @@ void StrokeController::update()
             return;
         }
 
-        Log.traceln("deltaTime: %u", flywheelData.deltaTime);
+        //Log.traceln("deltaTime: %u", flywheelData.deltaTime);
 
         strokeService.processData(flywheelData);
         rowerState = strokeService.getData();

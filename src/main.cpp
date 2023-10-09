@@ -30,7 +30,9 @@ void setup()
 // - connected  microsec 2000-4900
 void loop()
 {
-    // simulateRotation();
+    if( SIMULATE_STROKES ) {
+        simulateRotation();
+    }
 
     strokeController.update();
     peripheralController.update();

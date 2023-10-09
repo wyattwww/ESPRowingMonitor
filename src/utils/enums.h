@@ -17,7 +17,8 @@ enum class CyclePhase : unsigned char
 enum class BleServiceFlag : unsigned char
 {
     CpsService,
-    CscService
+    CscService,
+    FtmsService
 };
 
 enum class ArduinoLogLevel : unsigned char
@@ -142,4 +143,42 @@ public:
     static unsigned short const BottomDeadSpotAnglePresent = (0x01U << 10U);
     static unsigned short const AccumulatedEnergyPresent = (0x01U << 11U);
     static unsigned short const OffsetCompensationIndicator = (0x01U << 12U);
+};
+
+class FTMSFeaturesFlags
+{
+public:
+    static unsigned char const AverageSpeedSupported = (0x00 << 0U);
+    static unsigned char const CadenceSupported = (0x01 << 1U);
+    static unsigned char const TotalDistanceSupported = (0x01 << 2U);
+    static unsigned char const InclinationSupported = (0x00 << 3U);
+    static unsigned char const ElevationGainSupported = (0x00 << 4U);
+    static unsigned char const PaceSupported = (0x01 << 5U);
+    static unsigned char const StepCountSupported = (0x00 << 6U);
+    static unsigned char const ResistanceLevelSupported = (0x00 << 7U);
+    static unsigned char const StrideCountSupported = (0x00 << 8U);
+    static unsigned char const ExpendedEnergySupported = (0x01 << 9U);
+    static unsigned char const HeartRateMeasurementSupported = (0x00 << 10U);
+    static unsigned char const MetabolicEquivalentSupported = (0x00 << 11U);
+    static unsigned char const ElapsedTimeSupported = (0x01 << 12U);
+    static unsigned char const RemainingTimeSupported = (0x0 << 13U);
+    static unsigned char const PowerMeasurementSupported = (0x01 << 14U);
+    static unsigned char const ForceOnBeltPowerOutputSupported = (0x0 << 15U);
+    static unsigned char const UserDataRetentionSupported = (0x00 << 16U);
+};
+
+class FTMSRowerFeaturesFlags
+{
+public:
+    static unsigned short const MoreDataPresent = (0x01U << 0U);
+    static unsigned short const AverageStrokeRatePresent = (0x00U << 1U);
+    static unsigned short const TotalDistancePresent = (0x01U << 2U);
+    static unsigned short const InstaneousPacePresent = (0x01U << 3U);
+    static unsigned short const AveragePacePresent = (0x00U << 3U);
+    static unsigned short const ResistanceLevelPresent = (0x00U << 3U);
+    static unsigned short const ExpendedEnergyPresent = (0x01U << 4U);
+    static unsigned short const HeartRatePresent = (0x00U << 5U);
+    static unsigned short const MetabolicEquivalentPresent = (0x00U << 6U);
+    static unsigned short const ElapsedTimePresent = (0x01U << 7U);
+    static unsigned short const RemainingTimePresent = (0x00U << 8U);
 };

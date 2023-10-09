@@ -4,8 +4,8 @@
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
-#define DEFAULT_CPS_LOGGING_LEVEL ArduinoLogLevel::LogLevelTrace
-#define DEFAULT_BLE_SERVICE BleServiceFlag::CpsService
+#define DEFAULT_CPS_LOGGING_LEVEL ArduinoLogLevel::LogLevelVerbose
+#define DEFAULT_BLE_SERVICE BleServiceFlag::FtmsService
 #define ENABLE_WEBSOCKET_MONITOR true
 #define ENABLE_WEBGUI false
 #define ENABLE_BLE_SERVICE true
@@ -13,11 +13,11 @@
 
 // Hardware settings
 #define SENSOR_PIN_NUMBER GPIO_NUM_26
-#define IMPULSES_PER_REVOLUTION 3
-#define FLYWHEEL_INERTIA 0.073
+#define IMPULSES_PER_REVOLUTION 2
+#define FLYWHEEL_INERTIA 0.101
 #define LED_BLINK_FREQUENCY 1000
 #define SPROCKET_RADIUS 1.50
-#define CONCEPT_2_MAGIC_NUMBER 2.8
+#define CONCEPT_2_MAGIC_NUMBER 2.5
 
 // Sensor signal filter settings
 #define ROTATION_DEBOUNCE_TIME_MIN 7
@@ -52,5 +52,7 @@
 #define INITIAL_BATTERY_LEVEL_MEASUREMENT_COUNT 10
 #define BATTERY_MEASUREMENT_FREQUENCY 10
 #define DEEP_SLEEP_TIMEOUT 4
+
+#define SIMULATE_STROKES 1
 
 // NOLINTEND(cppcoreguidelines-macro-usage)

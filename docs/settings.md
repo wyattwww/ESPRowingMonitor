@@ -35,7 +35,8 @@ Sets the default BLE service profile. Please note that if BLE service flag was s
 enum class BleServiceFlag : unsigned char
 {
     CpsService,
-    CscService
+    CscService,
+    FtmsService
 };
 ```
 

@@ -2,6 +2,7 @@
 
 #include "bluetooth.service.h"
 #include "network.service.h"
+#include "../utils/configuration.h"
 #include "utils/EEPROM.service.h"
 
 class PeripheralsController
@@ -15,12 +16,23 @@ class PeripheralsController
     unsigned int lastConnectedDeviceCheckTime = 0;
     unsigned int lastBroadcastTime = 0UL;
 
+    unsigned short lastStrokeCount = 0;
+    unsigned long long lastStrokeTime = 0;
+    unsigned long long lastRTime = 0;
+    unsigned int lastDistance = 0;
+
     unsigned char batteryLevelData = 0;
     unsigned short bleRevTimeData = 0;
     unsigned int bleRevCountData = 0;
     unsigned short bleStrokeTimeData = 0;
     unsigned short bleStrokeCountData = 0;
     short bleAvgStrokePowerData = 0;
+    unsigned short bleStrokeRateData = 0;
+    Configurations::precision blePaceData = 0;
+    unsigned int bleCaloriesTotalData = 0;
+    unsigned int bleCaloriesPerHourData = 0;
+    unsigned int bleCaloriesPerMinData = 0;
+    unsigned long long bleElapsedTimeData = 0;
 
     unsigned char ledState = HIGH;
 

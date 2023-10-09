@@ -27,5 +27,9 @@ namespace RowingDataModels
         Configurations::precision avgStrokePower;
         Configurations::precision dragCoefficient;
         std::vector<Configurations::precision> driveHandleForces;
+        unsigned long long elapsedTime;
+        unsigned int totalCalories;
+        unsigned int totalCaloriesPerHour;
+        unsigned int totalCaloriesPerMinute;
     };
 }
