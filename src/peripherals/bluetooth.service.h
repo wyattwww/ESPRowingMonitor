@@ -9,6 +9,17 @@
 
 class BluetoothService
 {
+    class ServerCallbacks : public NimBLEServerCallbacks
+    {
+        BluetoothService &bleService;
+
+    public:
+        explicit ServerCallbacks(BluetoothService &_bleService);
+
+        void onConnect(NimBLEServer* pServer) override;
+        void onDisconnect(NimBLEServer* pServer) override;
+    };
+
     class ControlPointCallbacks : public NimBLECharacteristicCallbacks
     {
         BluetoothService &bleService;
@@ -20,6 +31,7 @@ class BluetoothService
     };
 
     EEPROMService &eepromService;
+    ServerCallbacks serverCallbacks;
     ControlPointCallbacks controlPointCallbacks;
 
     //CSC
@@ -97,6 +109,7 @@ class BluetoothService
     NimBLEService *setupPscServices(NimBLEServer *server);
     NimBLEService *setupFtmsServices(NimBLEServer *server);
     void setupAdvertisement() const;
+    void updateDeviceName();
 
 public:
     explicit BluetoothService(EEPROMService &_eepromService);

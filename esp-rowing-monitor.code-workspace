@@ -67,7 +67,8 @@
 			"regex": "cpp",
 			"ranges": "cpp",
 			"span": "cpp",
-			"cassert": "cpp"
+			"cassert": "cpp",
+			"iostream": "cpp"
 		}
 	}
 }

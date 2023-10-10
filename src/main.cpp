@@ -30,7 +30,7 @@ void setup()
 // - connected  microsec 2000-4900
 void loop()
 {
-    if( SIMULATE_STROKES ) {
+    if( SIMULATE_STROKES && BluetoothService::isAnyDeviceConnected() ) {
         simulateRotation();
     }
 

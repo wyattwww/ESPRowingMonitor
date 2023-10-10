@@ -188,14 +188,14 @@ void StrokeService::recoveryEnd()
     if( cyclePower.size() >= Configurations::numOfPhasesForAveragingScreenData ) 
     {
         strokeCalories = (4 * cyclePower.median() + 350) * (cycleDuration.median()) / 4200;
-        unsigned int totalCal = calories.yAtSeriesEnd() + strokeCalories;
-        calories.push( rowTimeInSec, totalCal );
+        unsigned int totalCal = calories + strokeCalories;
+        calories = totalCal;
 
-        Log.traceln("StrokeCal: %u, totalCal: %u", strokeCalories, totalCal);
+        //Log.traceln("StrokeCal: %u, totalCal: %u", strokeCalories, totalCal);
     
-        totalCalories = calories.yAtSeriesEnd() > 0 ? calories.yAtSeriesEnd() / secInMicroSec : 0; // kcal
-        totalCaloriesPerMinute = rowTimeInSec > 60 ? caloriesPerPeriod(rowTimeInSec - 60, rowTimeInSec) / secInMicroSec : caloriesPerPeriod(0, 60) / secInMicroSec;
-        totalCaloriesPerHour = rowTimeInSec > 3600 ? caloriesPerPeriod(rowTimeInSec - 3600, rowTimeInSec) / secInMicroSec : caloriesPerPeriod(0, 3600) / secInMicroSec;
+        totalCalories = calories > 0 ? calories / secInMicroSec : 0; // kcal
+        totalCaloriesPerMinute = 0;
+        totalCaloriesPerHour = 0;
     }
     else {
         totalCalories = 0;
@@ -203,13 +203,6 @@ void StrokeService::recoveryEnd()
         totalCaloriesPerHour = 0;
     }
 }
-
-unsigned int StrokeService::caloriesPerPeriod(unsigned long long periodBegin, unsigned long long periodEnd) 
-{
-    unsigned int beginCalories = calories.projectX(periodBegin);
-    unsigned int endCalories = calories.projectX(periodEnd);
-    return (endCalories - beginCalories);
-  }
 
 RowingDataModels::RowingMetrics StrokeService::getData()
 {

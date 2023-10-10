@@ -3704,7 +3704,7 @@ void simulateRotation()
         return;
     }
     
-    if( i2 == 1 )
+    if( i2 == 500 )
     {
         return;
     }

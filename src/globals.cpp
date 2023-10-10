@@ -1,5 +1,8 @@
 #include "Arduino.h"
 
+#include <sstream>
+#include <iomanip>
+
 #include "globals.h"
 
 Preferences preferences;
@@ -85,4 +88,15 @@ void printLogLevel(Print *const _logOutput, const int logLevel)
         _logOutput->print("VERBOSE - ");
         break;
     }
+}
+
+std::string hexStr(const uint8_t * data, int len)
+{
+    std::stringstream ss;
+    ss << std::hex;
+    for(int i=0;i<len;++i)
+        ss << std::setw(2) << std::setfill('0') << (int)data[i];
+    std::string hexStr = ss.str();
+    std::transform(hexStr.begin(), hexStr.end(), hexStr.begin(), ::toupper);
+    return hexStr;
 }

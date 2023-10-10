@@ -4,7 +4,7 @@
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
-#define DEFAULT_CPS_LOGGING_LEVEL ArduinoLogLevel::LogLevelVerbose
+#define DEFAULT_CPS_LOGGING_LEVEL ArduinoLogLevel::LogLevelTrace
 #define DEFAULT_BLE_SERVICE BleServiceFlag::FtmsService
 #define ENABLE_WEBSOCKET_MONITOR true
 #define ENABLE_WEBGUI false

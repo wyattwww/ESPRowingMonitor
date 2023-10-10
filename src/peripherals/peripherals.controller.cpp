@@ -87,12 +87,12 @@ void PeripheralsController::updateData(const RowingDataModels::RowingMetrics dat
 
     if( bleRevCountData > 0 && bleRevCountData > lastDistance ) 
     {
-        blePaceData = (bleRevCountData - lastDistance) / ((data.lastRevTime - lastRTime) / secInMicroSec);
+        blePaceData = 500 / ((bleRevCountData - lastDistance) / 100 / ((data.lastRevTime - lastRTime) / secInMicroSec));
     }
 
     if( blePaceData < 0 ) 
     {
-        blePaceData = 0;
+        blePaceData = 0.0;
     }
     
     bleCaloriesTotalData = data.totalCalories;
@@ -123,7 +123,7 @@ void PeripheralsController::notify() const
     }
     if (eepromService.getBleServiceFlag() == BleServiceFlag::FtmsService)
     {
-        bluetoothService.notifyFtms(bleStrokeRateData, bleStrokeCountData, bleRevCountData, blePaceData, bleAvgStrokePowerData, bleCaloriesTotalData, bleCaloriesPerHourData, bleCaloriesPerMinData, bleElapsedTimeData );
+        bluetoothService.notifyFtms(bleStrokeRateData, bleStrokeCountData, bleRevCountData/100.0, blePaceData, bleAvgStrokePowerData, bleCaloriesTotalData, bleCaloriesPerHourData, bleCaloriesPerMinData, bleElapsedTimeData );
     }
 }
 

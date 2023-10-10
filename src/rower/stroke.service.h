@@ -70,7 +70,7 @@ class StrokeService
 
     Series cyclePower = Series(Configurations::numOfPhasesForAveragingScreenData);
     Series cycleDuration = Series(Configurations::numOfPhasesForAveragingScreenData);
-    OLSLinearSeries calories = OLSLinearSeries();
+    unsigned long long calories = 0;
 
     bool isFlywheelUnpowered() const;
     bool isFlywheelPowered() const;
@@ -85,8 +85,6 @@ class StrokeService
     void recoveryEnd();
     
     unsigned long long getElapsedTime();
-
-    unsigned int caloriesPerPeriod(unsigned long long periodBegin, unsigned long long periodEnd);
 
 public:
     StrokeService();

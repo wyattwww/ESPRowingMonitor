@@ -5,9 +5,22 @@
 
 #include "../utils/configuration.h"
 #include "bluetooth.service.h"
+#include "globals.h"
 
 using std::array;
 using std::to_string;
+
+BluetoothService::ServerCallbacks::ServerCallbacks(BluetoothService &_bleService) : bleService(_bleService) {}
+
+void BluetoothService::ServerCallbacks::onConnect(NimBLEServer* pServer)
+{
+    Log.traceln("Bluetooth server connected");
+}
+
+void BluetoothService::ServerCallbacks::onDisconnect(NimBLEServer* pServer)
+{
+    Log.traceln("Bluetooth server disconnected");
+}
 
 BluetoothService::ControlPointCallbacks::ControlPointCallbacks(BluetoothService &_bleService) : bleService(_bleService) {}
 
@@ -113,7 +126,7 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
     pCharacteristic->indicate();
 }
 
-BluetoothService::BluetoothService(EEPROMService &_eepromService) : eepromService(_eepromService), controlPointCallbacks(*this)
+BluetoothService::BluetoothService(EEPROMService &_eepromService) : eepromService(_eepromService), controlPointCallbacks(*this), serverCallbacks(*this)
 {
 }
 
@@ -272,7 +285,7 @@ void BluetoothService::notifyFtms(const unsigned short strokeRate, const unsigne
             // see https://www.bluetooth.com/specifications/specs/gatt-specification-supplement-3/
             // for some of the data types
             // Stroke Rate in stroke/minute, value is multiplied by 2 to have a .5 precision
-            static_cast<unsigned char>(strokeRate*2),
+            static_cast<unsigned char>(strokeRate),
 
             // Stroke Count
             static_cast<unsigned char>(strokeCount),
@@ -331,28 +344,33 @@ void BluetoothService::notifyFtms(const unsigned short strokeRate, const unsigne
 
 void BluetoothService::setupBleDevice()
 {
-    Log.verboseln("Initializing BLE device");
+    Log.traceln("Initializing BLE device");
 
-    std::string deviceName = "ErgMonitor (";
-    if( eepromService.getBleServiceFlag() == BleServiceFlag::CscService ) {
-        deviceName += std::string( "CSC)" );
-    }
-    else if( eepromService.getBleServiceFlag() == BleServiceFlag::CpsService ) {
-        deviceName += std::string( "CPS)" );
-    }
-    else if( eepromService.getBleServiceFlag() == BleServiceFlag::FtmsService ) {
-        deviceName += std::string( "FTMS)" );
-    }   
+    std::string deviceName = "SwellSync";
      
     NimBLEDevice::init(deviceName);
+    updateDeviceName();
     NimBLEDevice::setPower(ESP_PWR_LVL_N6);
 
-    Log.verboseln("Setting up Server");
+    Log.traceln("Setting up Server");
 
     NimBLEDevice::createServer();
 
     setupServices();
     setupAdvertisement();
+}
+
+void BluetoothService::updateDeviceName() 
+{
+    const uint8_t * nativeAddr = NimBLEDevice::getAddress().getNative();
+    std::string devName = hexStr( nativeAddr, 4 );
+
+    std::string deviceName = "SwellSync ";
+    deviceName += devName.c_str();
+    
+    Log.traceln("BLE address: %s", deviceName.c_str());
+
+    NimBLEDevice::setDeviceName(deviceName.c_str());
 }
 
 void BluetoothService::setupServices()
@@ -396,6 +414,7 @@ void BluetoothService::setupServices()
     batteryService->start();
     measurementService->start();
     deviceInfoService->start();
+    server->setCallbacks(&serverCallbacks);
     server->start();
 }
 
