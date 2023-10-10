@@ -100,11 +100,6 @@ void PeripheralsController::updateData(const RowingDataModels::RowingMetrics dat
     bleCaloriesPerMinData = data.totalCaloriesPerMinute;
     bleElapsedTimeData = data.elapsedTime;
 
-    Log.traceln("Cal: %u", bleCaloriesTotalData);
-    Log.traceln("CalHr: %u", bleCaloriesPerHourData);
-    Log.traceln("CalMin: %u", bleCaloriesPerMinData);
-    Log.traceln("Time: %u", bleElapsedTimeData);
-
     lastStrokeCount = data.strokeCount;
     lastStrokeTime = data.lastStrokeTime;
     lastDistance = bleRevCountData;
