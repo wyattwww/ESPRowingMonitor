@@ -111,6 +111,11 @@ void PeripheralsController::updateData(const RowingDataModels::RowingMetrics dat
     }
 }
 
+unsigned long long PeripheralsController::getElapsedTIme()
+{
+    return bleElapsedTimeData;
+}
+
 void PeripheralsController::notify() const
 {
     if (eepromService.getBleServiceFlag() == BleServiceFlag::CpsService)

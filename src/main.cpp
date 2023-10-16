@@ -54,11 +54,20 @@ void loop()
 
     if (strokeController.getStrokeCount() != strokeController.getPreviousStrokeCount())
     {
+        Log.infoln("batteryLevel: %d", powerManagerController.getBatteryLevel());
+        Log.infoln("bleServiceFlag: %d", eepromService.getBleServiceFlag());
+        Log.infoln("logLevel: %d", eepromService.getLogLevel());
+        Log.infoln("revTime: %u", strokeController.getLastRevTime());
+        Log.infoln("strokeTime: %u", strokeController.getLastStrokeTime());
+        Log.infoln("strokeCount: %u", strokeController.getStrokeCount());
+        Log.infoln("totalCalories: %u", strokeService.getTotalCalories());
         Log.infoln("driveDuration: %D", strokeController.getDriveDuration());
         Log.infoln("recoveryDuration: %D", strokeController.getRecoveryDuration());
         Log.infoln("dragFactor: %d", strokeController.getDragFactor());
         Log.infoln("power: %d", strokeController.getAvgStrokePower());
-        Log.infoln("distance: %D", strokeController.getDistance() / 100.0);
+        Log.infoln("distance: %D", strokeController.getDistance());
+        Log.infoln("elapsedTime: %u", peripheralController.getElapsedTIme());
+        Log.infoln("--------");
 
         // execution time
         // - not connected: 173-200

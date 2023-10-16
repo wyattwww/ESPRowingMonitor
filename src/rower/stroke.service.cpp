@@ -224,6 +224,11 @@ RowingDataModels::RowingMetrics StrokeService::getData()
         .totalCaloriesPerMinute = totalCaloriesPerMinute};
 }
 
+unsigned int StrokeService::getTotalCalories()
+{
+    return totalCalories;
+}
+
 void StrokeService::processData(const RowingDataModels::FlywheelData data)
 {
     deltaTimes.push(data.totalTime, data.deltaTime);

@@ -320,6 +320,7 @@ void BluetoothService::notifyFtms(const unsigned short strokeRate, const unsigne
             
             // Elapsed Time: Seconds with a resolution of 1
             static_cast<unsigned char>(elapsedTime),
+            static_cast<unsigned char>(elapsedTime >> 8),
         };
 
         // auto stop = micros();
@@ -403,8 +404,7 @@ void BluetoothService::setupServices()
         ->setValue("Swell Monitor");
     deviceInfoService
         ->createCharacteristic(serialNumberSvcUuid, NIMBLE_PROPERTY::READ)
-<<<<<<< HEAD
-        ->setValue("2023115");
+        ->setValue("20231015");
     deviceInfoService
         ->createCharacteristic(softwareNumberSvcUuid, NIMBLE_PROPERTY::READ)
         ->setValue("4.1.0.1");

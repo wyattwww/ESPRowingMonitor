@@ -41,11 +41,14 @@ unsigned char PowerManagerService::measureBattery()
 
     for (unsigned char i = 0; i < Configurations::batteryLevelArrayLength; i++)
     {
-        auto const measurement = analogRead(GPIO_NUM_34);
-
+        auto const measurement = analogRead(A0);
+        
         auto const espRefVolt = 3.3;
         auto const dacResolution = 4095;
         auto rawNewBatteryLevel = ((measurement * espRefVolt / dacResolution) - Configurations::batteryVoltageMin) / (Configurations::batteryVoltageMax - Configurations::batteryVoltageMin) * 100;
+
+        Log.traceln("Battery measure: %u", measurement);
+        Log.traceln("Battery level: %d", rawNewBatteryLevel);
 
         if (rawNewBatteryLevel > 100)
         {
@@ -72,7 +75,7 @@ unsigned char PowerManagerService::measureBattery()
 
 void PowerManagerService::setupBatteryMeasurement()
 {
-    pinMode(Configurations::batteryPinNumber, INPUT);
+    pinMode(A0 /*Configurations::batteryPinNumber*/, INPUT);
 
     delay(500);
     for (unsigned char i = 0; i < Configurations::initialBatteryLevelMeasurementCount; i++)

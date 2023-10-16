@@ -49,4 +49,5 @@ public:
     void updateData(const RowingDataModels::RowingMetrics data);
     void notifyDragFactor(unsigned char dragFactor) const;
     bool isAnyDeviceConnected();
+    unsigned long long getElapsedTIme();
 };
