@@ -34,6 +34,10 @@ void loop()
         simulateRotation();
     }
 
+    if( !peripheralController.isAnyDeviceConnected() ) {
+        strokeService.resetStartTime();
+    }
+
     strokeController.update();
     peripheralController.update();
     powerManagerController.update(strokeController.getRawImpulseTime(), peripheralController.isAnyDeviceConnected());

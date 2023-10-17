@@ -56,11 +56,13 @@ void StrokeService::calculateDragCoefficient()
 {
     if (recoveryDuration > Configurations::maxDragFactorRecoveryPeriod || recoveryDeltaTimes.size() < Configurations::impulseDataArrayLength)
     {
+        //Log.traceln("calculateDragCoefficient ret 1");
         return;
     }
 
     if (recoveryDeltaTimes.goodnessOfFit() < Configurations::goodnessOfFitThreshold)
     {
+        //Log.traceln("calculateDragCoefficient ret 2, fit: %D", recoveryDeltaTimes.goodnessOfFit());
         return;
     }
 
@@ -69,6 +71,7 @@ void StrokeService::calculateDragCoefficient()
     if (rawNewDragCoefficient > Configurations::upperDragFactorThreshold ||
         rawNewDragCoefficient < Configurations::lowerDragFactorThreshold)
     {
+        //Log.traceln("calculateDragCoefficient ret 3, rawNewDragCoefficient: %D", rawNewDragCoefficient);
         return;
     }
 
@@ -104,6 +107,11 @@ unsigned long long StrokeService::getElapsedTime() {
     unsigned long long elapsed = (millis()-startTime);
     //Log.traceln("Elapsed:  %u", elapsed);
     return elapsed / 1e3L;
+}
+
+void StrokeService::resetStartTime() 
+{
+    startTime = 0;
 }
 
 void StrokeService::driveStart()

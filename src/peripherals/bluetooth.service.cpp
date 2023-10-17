@@ -347,7 +347,7 @@ void BluetoothService::setupBleDevice()
 {
     Log.traceln("Initializing BLE device");
 
-    std::string deviceName = "SwellSync";
+    std::string deviceName = Configurations::deviceName;
      
     NimBLEDevice::init(deviceName);
     updateDeviceName();
@@ -366,7 +366,7 @@ void BluetoothService::updateDeviceName()
     const uint8_t * nativeAddr = NimBLEDevice::getAddress().getNative();
     std::string devName = hexStr( nativeAddr, 4 );
 
-    std::string deviceName = "SwellSync ";
+    std::string deviceName =  Configurations::deviceName + " ";
     deviceName += devName.c_str();
     
     Log.traceln("BLE address: %s", deviceName.c_str());

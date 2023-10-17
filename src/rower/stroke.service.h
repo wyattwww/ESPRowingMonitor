@@ -92,4 +92,5 @@ public:
     RowingDataModels::RowingMetrics getData();
     void processData(RowingDataModels::FlywheelData data);
     unsigned int getTotalCalories();
+    void resetStartTime();
 };
