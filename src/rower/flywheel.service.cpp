@@ -11,9 +11,16 @@ FlywheelService::FlywheelService() {}
 
 void FlywheelService::setup()
 {
-    pinMode(Configurations::sensorPinNumber, INPUT_PULLUP);
+    FlywheelService::startHallSensor();
     Log.verboseln("Attach interrupt");
     attachRotationInterrupt();
+}
+
+void FlywheelService::startHallSensor()
+{
+    pinMode(Configurations::hallOnSwitchPinNumber, OUTPUT);
+    digitalWrite(Configurations::hallOnSwitchPinNumber, HIGH);
+    pinMode(Configurations::hallSensorPinNumber, INPUT_PULLUP);
 }
 
 RowingDataModels::FlywheelData FlywheelService::getData()

@@ -31,12 +31,12 @@ IRAM_ATTR void rotationInterrupt()
 
 void attachRotationInterrupt()
 {
-    attachInterrupt(digitalPinToInterrupt(Configurations::sensorPinNumber), rotationInterrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(Configurations::hallSensorPinNumber), rotationInterrupt, FALLING);
 }
 
 void detachRotationInterrupt()
 {
-    detachInterrupt(digitalPinToInterrupt(Configurations::sensorPinNumber));
+    detachInterrupt(digitalPinToInterrupt(Configurations::hallSensorPinNumber));
 }
 
 void printPrefix(Print *const _logOutput, int logLevel)

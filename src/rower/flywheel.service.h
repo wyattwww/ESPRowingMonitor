@@ -17,6 +17,7 @@ class FlywheelService
     unsigned long long totalTime = 0ULL;
 
     volatile bool isDataChanged = false;
+    static void startHallSensor();
 
 public:
     FlywheelService();

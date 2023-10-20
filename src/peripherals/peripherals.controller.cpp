@@ -7,7 +7,7 @@ PeripheralsController::PeripheralsController(BluetoothService &_bluetoothService
 {
 }
 
-void PeripheralsController::update()
+void PeripheralsController::update(unsigned char batteryLevel)
 {
     if constexpr (Configurations::isWebsocketEnabled)
     {
@@ -17,7 +17,18 @@ void PeripheralsController::update()
     auto const now = millis();
     if (now - lastConnectedDeviceCheckTime > Configurations::ledBlinkFrequency)
     {
-        updateLed();
+        auto ledColor = CRGB::Blue;
+        const auto minBattLevel = 30;
+        if (batteryLevel < minBattLevel)
+        {
+            ledColor = CRGB::Red;
+        }
+        const auto maxBattLevel = 80;
+        if (batteryLevel > maxBattLevel)
+        {
+            ledColor = CRGB::Green;
+        }
+        updateLed(ledColor);
         lastConnectedDeviceCheckTime = now;
     }
 
@@ -53,12 +64,12 @@ bool PeripheralsController::isAnyDeviceConnected()
     return BluetoothService::isAnyDeviceConnected() || networkService.isAnyDeviceConnected();
 }
 
-void PeripheralsController::updateLed()
+void PeripheralsController::updateLed(CRGB::HTMLColorCode newLedColor)
 {
-    ledState = isAnyDeviceConnected() ? HIGH : ledState == HIGH ? LOW
-                                                                : HIGH;
-
-    digitalWrite(GPIO_NUM_2, ledState);
+    ledColor = isAnyDeviceConnected() ? newLedColor : ledColor == CRGB::Black ? newLedColor
+                                                                              : CRGB::Black;
+    leds[0] = ledColor;
+    FastLED.show();
 }
 
 void PeripheralsController::notifyBattery(const unsigned char batteryLevel)
@@ -143,5 +154,5 @@ void PeripheralsController::notifyDragFactor(const unsigned char dragFactor) con
 
 void PeripheralsController::setupConnectionIndicatorLed() const
 {
-    pinMode(GPIO_NUM_2, OUTPUT);
+    FastLED.addLeds<WS2812, GPIO_NUM_5>(leds, 1);
 }

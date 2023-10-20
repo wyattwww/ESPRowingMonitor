@@ -34,17 +34,18 @@ class PeripheralsController
     unsigned int bleCaloriesPerMinData = 0;
     unsigned long long bleElapsedTimeData = 0;
 
-    unsigned char ledState = HIGH;
+    CRGB::HTMLColorCode ledColor = CRGB::Black;
+    inline static CRGB leds[1];
 
     void notify() const;
-    void updateLed();
+    void updateLed(CRGB::HTMLColorCode newLedColor);
     void setupConnectionIndicatorLed() const;
 
 public:
     PeripheralsController(BluetoothService &_bluetoothService, NetworkService &_networkService, EEPROMService &_eepromService);
 
     void begin();
-    void update();
+    void update(unsigned char batteryLevel);
     void notifyBattery(unsigned char batteryLevel);
     void updateData(const RowingDataModels::RowingMetrics data);
     void notifyDragFactor(unsigned char dragFactor) const;

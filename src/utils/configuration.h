@@ -17,7 +17,9 @@ public:
     static inline string const deviceName = TOSTRING(DEVICE_NAME);
 
     // Hardware settings
-    static gpio_num_t const sensorPinNumber = SENSOR_PIN_NUMBER;
+    static gpio_num_t const wakeupSensorPinNumber = WAKEUP_SENSOR_PIN_NUMBER;
+    static gpio_num_t const hallSensorPinNumber = HALL_SENSOR_PIN_NUMBER;
+    static gpio_num_t const hallOnSwitchPinNumber = HALL_ON_SWITCH_PIN_NUMBER;
     static unsigned char const impulsesPerRevolution = IMPULSES_PER_REVOLUTION;
     static double constexpr flywheelInertia = FLYWHEEL_INERTIA;
     static unsigned short const ledBlinkFrequency = LED_BLINK_FREQUENCY;
@@ -59,6 +61,8 @@ public:
     static unsigned char const voltageDividerRatio = VOLTAGE_DIVIDER_RATIO;
     static double constexpr batteryVoltageMin = BATTERY_VOLTAGE_MIN / Configurations::voltageDividerRatio;
     static double constexpr batteryVoltageMax = BATTERY_VOLTAGE_MAX / Configurations::voltageDividerRatio;
+    static double constexpr batteryMVoltageMin = BATTERY_MVOLTAGE_MIN;
+    static double constexpr batteryMVoltageMax = BATTERY_MVOLTAGE_MAX;
     static unsigned char const batteryLevelArrayLength = BATTERY_LEVEL_ARRAY_LENGTH;
     static unsigned char const initialBatteryLevelMeasurementCount = INITIAL_BATTERY_LEVEL_MEASUREMENT_COUNT;
     static unsigned int const batteryMeasurementFrequency = BATTERY_MEASUREMENT_FREQUENCY * 60 * 1000;

@@ -6,7 +6,7 @@
 
 void setup()
 {
-    auto const baudRate = 115200;
+    auto const baudRate = 1500000;
     Serial.begin(baudRate);
     while (!Serial && !(bool)Serial.available())
     {
@@ -39,7 +39,7 @@ void loop()
     }
 
     strokeController.update();
-    peripheralController.update();
+    peripheralController.update(powerManagerController.getBatteryLevel());
     powerManagerController.update(strokeController.getRawImpulseTime(), peripheralController.isAnyDeviceConnected());
 
     // auto start = micros();
@@ -69,7 +69,7 @@ void loop()
         Log.infoln("recoveryDuration: %D", strokeController.getRecoveryDuration());
         Log.infoln("dragFactor: %d", strokeController.getDragFactor());
         Log.infoln("power: %d", strokeController.getAvgStrokePower());
-        Log.infoln("distance: %D", strokeController.getDistance());
+        Log.infoln("distance: %D", strokeController.getDistance() / 100.0);
         Log.infoln("elapsedTime: %u", peripheralController.getElapsedTIme());
         Log.infoln("--------");
 

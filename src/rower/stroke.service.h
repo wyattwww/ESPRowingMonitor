@@ -76,6 +76,7 @@ class StrokeService
     bool isFlywheelPowered() const;
     void calculateDragCoefficient();
     void calculateAvgStrokePower();
+    void startHallSensor() const;
 
     void driveStart();
     void driveUpdate();

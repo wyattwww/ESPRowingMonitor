@@ -6,13 +6,18 @@
 
 #define DEFAULT_CPS_LOGGING_LEVEL ArduinoLogLevel::LogLevelTrace
 #define DEFAULT_BLE_SERVICE BleServiceFlag::FtmsService
-#define ENABLE_WEBSOCKET_MONITOR true
-#define ENABLE_WEBGUI true
+#define ENABLE_WEBSOCKET_MONITOR false
+#define ENABLE_WEBGUI false
 #define ENABLE_BLE_SERVICE true
 #define DEVICE_NAME SwellSync
 
 // Hardware settings
-#define SENSOR_PIN_NUMBER GPIO_NUM_26
+#define WAKEUP_SENSOR_PIN_NUMBER GPIO_NUM_25 // for Lolin D32 and Wemos D1 Mini
+#define HALL_SENSOR_PIN_NUMBER GPIO_NUM_15
+#define HALL_ON_SWITCH_PIN_NUMBER GPIO_NUM_22
+
+//#define SENSOR_PIN_NUMBER GPIO_NUM_10 // for Wemos C3 Mini
+
 #define IMPULSES_PER_REVOLUTION 4
 #define FLYWHEEL_INERTIA 0.101
 #define LED_BLINK_FREQUENCY 1000
@@ -44,7 +49,15 @@
 #define PORT 80
 
 // Device power management settings
-#define BATTERY_PIN_NUMBER GPIO_NUM_4
+#define BATTERY_PIN_NUMBER GPIO_NUM_35 // for Lolin D32
+
+//#define BATTERY_PIN_NUMBER GPIO_NUM_36 // for Wemos D1 Mini
+
+//#define BATTERY_READ_MV 1 // for Wemos D1 Mini
+#define BATTERY_MVOLTAGE_MIN 2800
+#define BATTERY_MVOLTAGE_MAX 3134
+
+//#define BATTERY_PIN_NUMBER  // for Wemos C3 Mini
 #define VOLTAGE_DIVIDER_RATIO 2
 #define BATTERY_VOLTAGE_MIN 3.3
 #define BATTERY_VOLTAGE_MAX 4.00
@@ -53,6 +66,8 @@
 #define BATTERY_MEASUREMENT_FREQUENCY 10
 #define DEEP_SLEEP_TIMEOUT 4
 
-#define SIMULATE_STROKES 1
+#define SUPPORT_WAKEUP 1
+
+#define SIMULATE_STROKES 0
 
 // NOLINTEND(cppcoreguidelines-macro-usage)

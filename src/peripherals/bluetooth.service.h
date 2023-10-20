@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "FastLED.h"
 #include "NimBLEDevice.h"
 
 #include "../utils/EEPROM.service.h"
