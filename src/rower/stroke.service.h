@@ -41,7 +41,7 @@ class StrokeService
     unsigned long long revTime = 0ULL;
     Configurations::precision avgStrokePower = 0;
 
-    Configurations::precision dragCoefficient = 0;
+    Configurations::precision dragCoefficient = 101.0 / 1e6;
 
     std::array<Configurations::precision, Configurations::dragCoefficientsArrayLength> dragCoefficients{};
 

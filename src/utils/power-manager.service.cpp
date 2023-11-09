@@ -27,7 +27,7 @@ void PowerManagerService::setup()
 void PowerManagerService::goToSleep()
 {
     pinMode(Configurations::wakeupSensorPinNumber, INPUT_PULLUP);
-    Log.verboseln("Configure deep sleep mode, pin status: %s", digitalRead(Configurations::wakeupSensorPinNumber) ? "HIGH" : "LOW");
+    Log.infoln("Configure deep sleep mode, pin status: %s", digitalRead(Configurations::wakeupSensorPinNumber) ? "HIGH" : "LOW");
 #ifdef SUPPORT_WAKEUP
     esp_sleep_enable_ext0_wakeup(Configurations::wakeupSensorPinNumber, digitalRead(Configurations::wakeupSensorPinNumber) == HIGH ? LOW : HIGH);
 #endif
