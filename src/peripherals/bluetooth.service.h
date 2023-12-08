@@ -85,6 +85,7 @@ class BluetoothService
 	static unsigned short const rowerDataCharacteristicUuid = 0x2AD1;
 	static unsigned short const fitnessControlCharacteristicUuid = 0x2AD9;
     static unsigned short const fitnessTrainingStatusCharacteristicUuid = 0x2AD3;
+    static unsigned short const swellSyncStatusCharacteristicUuid = 0x5354;
 
     static unsigned short const bleAppearanceFitnessMachine = 1158;
 
@@ -103,6 +104,7 @@ class BluetoothService
     NimBLECharacteristic *ftmsMachineStatusCharacteristic = nullptr;
     NimBLECharacteristic *ftmsRowerDataCharacteristic = nullptr;
     NimBLECharacteristic *ftmsControlCharacteristic = nullptr;
+    NimBLECharacteristic *swellSyncStatusCharacteristic = nullptr;
 
     void setupBleDevice();
     void setupServices();
@@ -121,6 +123,7 @@ public:
     void notifyBattery(unsigned char batteryLevel) const;
     void notifyCsc(unsigned short revTime, unsigned int revCount, unsigned short strokeTime, unsigned short strokeCount) const;
     void notifyPsc(unsigned short revTime, unsigned int revCount, unsigned short strokeTime, unsigned short strokeCount, short avgStrokePower) const;
+    void notifySwellSyncStatus(const float inertia, const bool isAutoDrag, const int dragFactor, const float magicNum) const;
     void notifyFtms(const unsigned short strokeRate, const unsigned short strokeCount,
                                     const long long distance, const float pace, const short power, const short caloriesTotal, 
                                     const short caloriesPerHour, const short caloriesPerMin, const long long elapsedTime) const;

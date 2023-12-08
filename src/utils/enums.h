@@ -53,6 +53,10 @@ enum class PSCOpCodes : unsigned char
     StartEnhancedOffsetCompensation = 16U,
     SetLogLevel = 17U,
     ChangeBleService = 18U,
+    ChangeInertia = 19U,
+    ChangeAutoDragFactor = 20U,
+    ChangeDragFactor = 21U,
+    ChangeMagicNumber = 22U,
     ResponseCode = 32U
 };
 

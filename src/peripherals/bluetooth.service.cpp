@@ -47,79 +47,216 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
 
     switch (message[0])
     {
-
-    case static_cast<int>(PSCOpCodes::SetLogLevel):
-    {
-        Log.infoln("Set LogLevel");
-
-        auto response = PSCResponseOpCodes::InvalidParameter;
-        if (message.length() == 2 && message[1] >= 0 && message[1] <= 6)
+        case static_cast<int>(PSCOpCodes::SetLogLevel):
         {
-            Log.infoln("New LogLevel: %d", message[1]);
-            bleService.eepromService.setLogLevel(static_cast<ArduinoLogLevel>(message[1]));
-            response = PSCResponseOpCodes::Successful;
+            Log.infoln("Set LogLevel");
+
+            auto response = PSCResponseOpCodes::InvalidParameter;
+            if (message.length() == 2 && message[1] >= 0 && message[1] <= 6)
+            {
+                Log.infoln("New LogLevel: %d", message[1]);
+                bleService.eepromService.setLogLevel(static_cast<ArduinoLogLevel>(message[1]));
+                response = PSCResponseOpCodes::Successful;
+            }
+
+            array<uint8_t, 3>
+                temp = {
+                    static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                    static_cast<unsigned char>(message[0]),
+                    static_cast<unsigned char>(response)};
+
+            pCharacteristic->setValue(temp);
         }
+        break;
 
-        array<uint8_t, 3>
-            temp = {
-                static_cast<unsigned char>(PSCOpCodes::ResponseCode),
-                static_cast<unsigned char>(message[0]),
-                static_cast<unsigned char>(response)};
-
-        pCharacteristic->setValue(temp);
-    }
-    break;
-
-    case static_cast<int>(PSCOpCodes::ChangeBleService):
-    {
-        Log.infoln("Change BLE Service");
-
-        if (message.length() == 2 && message[1] >= 0 && message[1] <= 1)
+        case static_cast<int>(PSCOpCodes::ChangeBleService):
         {
-            if( message[1] == static_cast<unsigned char>(BleServiceFlag::CscService) ) {
-                Log.infoln("New BLE Service: %s", "CSC");
-            }
-            else if( message[1] == static_cast<unsigned char>(BleServiceFlag::CpsService) ) {
-                Log.infoln("New BLE Service: %s", "CPS");
-            }
-            else if( message[1] == static_cast<unsigned char>(BleServiceFlag::FtmsService) ) {
-                Log.infoln("New BLE Service: %s", "FTMS");
+            Log.infoln("Change BLE Service");
+
+            if (message.length() == 2 && message[1] >= 0 && message[1] <= 1)
+            {
+                if( message[1] == static_cast<unsigned char>(BleServiceFlag::CscService) ) {
+                    Log.infoln("New BLE Service: %s", "CSC");
+                }
+                else if( message[1] == static_cast<unsigned char>(BleServiceFlag::CpsService) ) {
+                    Log.infoln("New BLE Service: %s", "CPS");
+                }
+                else if( message[1] == static_cast<unsigned char>(BleServiceFlag::FtmsService) ) {
+                    Log.infoln("New BLE Service: %s", "FTMS");
+                }
+
+                bleService.eepromService.setBleServiceFlag(static_cast<BleServiceFlag>(message[1]));
+                array<uint8_t, 3> temp = {
+                    static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                    static_cast<unsigned char>(message[0]),
+                    static_cast<unsigned char>(PSCResponseOpCodes::Successful)};
+                pCharacteristic->setValue(temp);
+                pCharacteristic->indicate();
+
+                Log.verboseln("Restarting device in 5s");
+                delay(5000);
+                esp_restart();
+
+                break;
             }
 
-            bleService.eepromService.setBleServiceFlag(static_cast<BleServiceFlag>(message[1]));
             array<uint8_t, 3> temp = {
                 static_cast<unsigned char>(PSCOpCodes::ResponseCode),
                 static_cast<unsigned char>(message[0]),
-                static_cast<unsigned char>(PSCResponseOpCodes::Successful)};
+                static_cast<unsigned char>(PSCResponseOpCodes::InvalidParameter)};
+
             pCharacteristic->setValue(temp);
-            pCharacteristic->indicate();
-
-            Log.verboseln("Restarting device in 5s");
-            delay(5000);
-            esp_restart();
-
-            break;
         }
+        break;
 
-        array<uint8_t, 3> temp = {
-            static_cast<unsigned char>(PSCOpCodes::ResponseCode),
-            static_cast<unsigned char>(message[0]),
-            static_cast<unsigned char>(PSCResponseOpCodes::InvalidParameter)};
+        case static_cast<int>(PSCOpCodes::ChangeMagicNumber):
+        {
+            Log.infoln("Change Magic Number");
 
-        pCharacteristic->setValue(temp);
-    }
-    break;
+            if (message.length() == 3)
+            {
+                int magicNumScaled = static_cast<int>(message[1] | message[2] << 8);
+                float magicNumVal = static_cast<float>(magicNumScaled) / 1000.0;
 
-    default:
-    {
-        Log.infoln("Not Supported Op Code: %d", message[0]);
-        array<uint8_t, 3> response = {
-            static_cast<unsigned char>(PSCOpCodes::ResponseCode),
-            static_cast<unsigned char>(message[0]),
-            static_cast<unsigned char>(PSCResponseOpCodes::UnsupportedOpCode)};
-        pCharacteristic->setValue(response);
-    }
-    break;
+                Log.infoln("Received magic number %d, %d, %d, scaled to %D", message[1], message[2], magicNumScaled, magicNumVal);
+
+                bleService.eepromService.setMagicNumber(static_cast<float>(magicNumVal));
+                array<uint8_t, 3> temp = {
+                    static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                    static_cast<unsigned char>(message[0]),
+                    static_cast<unsigned char>(PSCResponseOpCodes::Successful)};
+                pCharacteristic->setValue(temp);
+                pCharacteristic->indicate();
+
+                //Log.verboseln("Restarting device in 5s");
+                //delay(5000);
+                //esp_restart();
+
+                break;
+            }
+
+            array<uint8_t, 3> temp = {
+                static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                static_cast<unsigned char>(message[0]),
+                static_cast<unsigned char>(PSCResponseOpCodes::InvalidParameter)};
+
+            pCharacteristic->setValue(temp);
+        }
+        break;
+
+        case static_cast<int>(PSCOpCodes::ChangeInertia):
+        {
+            Log.infoln("Change Inertia");
+
+            if (message.length() == 3)
+            {
+                int inertiaScaled = static_cast<int>(message[1] | message[2] << 8);
+                float inertiaVal = static_cast<float>(inertiaScaled) / 1000.0;
+
+                Log.infoln("Received inertia %d, %d, %d, scaled to %D", message[1], message[2], inertiaScaled, inertiaVal);
+
+                bleService.eepromService.setFlywheelInertia(static_cast<float>(inertiaVal));
+                array<uint8_t, 3> temp = {
+                    static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                    static_cast<unsigned char>(message[0]),
+                    static_cast<unsigned char>(PSCResponseOpCodes::Successful)};
+                pCharacteristic->setValue(temp);
+                pCharacteristic->indicate();
+
+                //Log.verboseln("Restarting device in 5s");
+                //delay(5000);
+                //esp_restart();
+
+                break;
+            }
+
+            array<uint8_t, 3> temp = {
+                static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                static_cast<unsigned char>(message[0]),
+                static_cast<unsigned char>(PSCResponseOpCodes::InvalidParameter)};
+
+            pCharacteristic->setValue(temp);
+        }
+        break;
+
+        case static_cast<int>(PSCOpCodes::ChangeAutoDragFactor):
+        {
+            Log.infoln("Change Auto Drag Factor");
+
+            if (message.length() == 2)
+            {
+                bool autodragFactor = static_cast<bool>(message[1]);
+
+                Log.infoln("Received auto drag factor %d, %d", message[1], autodragFactor);
+
+                bleService.eepromService.setAutoDragFactor(autodragFactor);
+                array<uint8_t, 3> temp = {
+                    static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                    static_cast<unsigned char>(message[0]),
+                    static_cast<unsigned char>(PSCResponseOpCodes::Successful)};
+                pCharacteristic->setValue(temp);
+                pCharacteristic->indicate();
+
+                //Log.verboseln("Restarting device in 5s");
+                //delay(5000);
+                //esp_restart();
+
+                break;
+            }
+
+            array<uint8_t, 3> temp = {
+                static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                static_cast<unsigned char>(message[0]),
+                static_cast<unsigned char>(PSCResponseOpCodes::InvalidParameter)};
+
+            pCharacteristic->setValue(temp);
+        }
+        break;
+
+        case static_cast<int>(PSCOpCodes::ChangeDragFactor):
+        {
+            Log.infoln("Change Drag Factor");
+
+            if (message.length() == 3)
+            {
+                int dragFactor = static_cast<int>(message[1] | message[2] << 8);
+
+                Log.infoln("Received drag factor %d, %d, %d", message[1], message[2], dragFactor);
+
+                bleService.eepromService.setDragFactor(dragFactor);
+                array<uint8_t, 3> temp = {
+                    static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                    static_cast<unsigned char>(message[0]),
+                    static_cast<unsigned char>(PSCResponseOpCodes::Successful)};
+                pCharacteristic->setValue(temp);
+                pCharacteristic->indicate();
+
+                //Log.verboseln("Restarting device in 5s");
+                //delay(5000);
+                //esp_restart();
+
+                break;
+            }
+
+            array<uint8_t, 3> temp = {
+                static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                static_cast<unsigned char>(message[0]),
+                static_cast<unsigned char>(PSCResponseOpCodes::InvalidParameter)};
+
+            pCharacteristic->setValue(temp);
+        }
+        break;
+
+        default:
+        {
+            Log.infoln("Not Supported Op Code: %d", message[0]);
+            array<uint8_t, 3> response = {
+                static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                static_cast<unsigned char>(message[0]),
+                static_cast<unsigned char>(PSCResponseOpCodes::UnsupportedOpCode)};
+            pCharacteristic->setValue(response);
+        }
+        break;
     }
 
     Log.verboseln("Send indicate");
@@ -172,6 +309,47 @@ void BluetoothService::notifyDragFactor(const unsigned short distance, const uns
     if (dragFactorCharacteristic->getSubscribedCount() > 0)
     {
         dragFactorCharacteristic->notify();
+    }
+}
+
+void BluetoothService::notifySwellSyncStatus(const float inertia, const bool isAutoDrag, const int dragFactor, const float magicNumber) const
+{
+    if( swellSyncStatusCharacteristic == nullptr ) 
+    {
+        return;
+    }
+    int inertiaInt = static_cast<int>(inertia * 1000.0);
+
+    unsigned char inertiaLsb = (unsigned)inertiaInt & 0xff; // mask the lower 8 bits
+    unsigned char inertiaMsb = (unsigned)inertiaInt >> 8;   // shift the higher 8 bits
+
+    int isAutoInt = static_cast<int>(isAutoDrag);
+    /*if( isAutoInt ) {
+        Log.traceln("Notifying Swellsync Status isAuto TRUE");    
+    }
+    else {
+        Log.traceln("Notifying Swellsync Status isAuto FALSE");    
+    }*/
+    unsigned char isAutoB = (unsigned)isAutoInt; // mask the lower 8 bits
+
+    unsigned char dragLsb = (unsigned)dragFactor & 0xff; // mask the lower 8 bits
+    unsigned char dragMsb = (unsigned)dragFactor >> 8;   // shift the higher 8 bits
+
+    int magicInt = static_cast<int>(magicNumber * 1000.0);
+
+    unsigned char magicLsb = (unsigned)magicInt & 0xff; // mask the lower 8 bits
+    unsigned char magicMsb = (unsigned)magicInt >> 8;   // shift the higher 8 bits
+
+    vector<unsigned char> bytes = { inertiaMsb, inertiaLsb, isAutoB, dragMsb, dragLsb, magicMsb, magicLsb };
+
+    std::string value(bytes.begin(), bytes.end());
+
+    //Log.traceln("Notifying Swellsync Status: %s", value.c_str());
+
+    swellSyncStatusCharacteristic->setValue(value);
+    if (swellSyncStatusCharacteristic->getSubscribedCount() > 0)
+    {
+        swellSyncStatusCharacteristic->notify();
     }
 }
 
@@ -481,7 +659,10 @@ NimBLEService *BluetoothService::setupFtmsServices(NimBLEServer *const server)
     
     //0x2AD9
     ftmsService->createCharacteristic(fitnessControlCharacteristicUuid, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::INDICATE)->setCallbacks(&controlPointCallbacks);
-    
+
+    //0x5354
+    swellSyncStatusCharacteristic = ftmsService->createCharacteristic(swellSyncStatusCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+
     return ftmsService;
 }
 

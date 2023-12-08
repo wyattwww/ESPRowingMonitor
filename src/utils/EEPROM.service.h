@@ -13,9 +13,17 @@ class EEPROMService
 
     static constexpr char const *logLevelAddress = "logLevel";
     static constexpr char const *bleServiceFlagAddress = "bleService";
+    static constexpr char const *magicNumAddress = "magicNum";
+    static constexpr char const *inertiaAddress = "inertia5";
+    static constexpr char const *autoDragFactorAddress = "autoDragFactor";
+    static constexpr char const *dragFactorAddress = "dragFactor";
 
     ArduinoLogLevel logLevel = Configurations::defaultLogLevel;
     BleServiceFlag bleServiceFlag = Configurations::defaultBleServiceFlag;
+    float magicNumber = Configurations::concept2MagicNumber;
+    float flywheelInertia = Configurations::flywheelInertia;
+    bool autoDragFactor = true;
+    int dragFactor = 101;
 
 public:
     explicit EEPROMService(Preferences &_preferences);
@@ -24,7 +32,16 @@ public:
 
     void setLogLevel(ArduinoLogLevel newLogLevel);
     void setBleServiceFlag(BleServiceFlag newServiceFlag);
+    void setMagicNumber(float num);
+    void setFlywheelInertia(float inertia);
+    void setAutoDragFactor(bool isAuto);
+    void setDragFactor(int drag);
+    void resetAll();
 
     BleServiceFlag getBleServiceFlag() const;
     ArduinoLogLevel getLogLevel() const;
+    float getMagicNumber() const;
+    float getFlywheerInertia() const;
+    bool isAutoDragFactor() const;
+    int getDragFactor() const;
 };

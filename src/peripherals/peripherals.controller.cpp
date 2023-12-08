@@ -118,7 +118,14 @@ void PeripheralsController::updateData(const RowingDataModels::RowingMetrics dat
     
     if constexpr (Configurations::isWebsocketEnabled)
     {
-        networkService.notifyClients(data, batteryLevelData, eepromService.getBleServiceFlag(), eepromService.getLogLevel());
+        networkService.notifyClients(data, 
+                                        batteryLevelData, 
+                                        eepromService.getBleServiceFlag(), 
+                                        eepromService.getLogLevel(), 
+                                        eepromService.getFlywheerInertia(),
+                                        eepromService.isAutoDragFactor(),
+                                        eepromService.getDragFactor(),
+                                        eepromService.getMagicNumber());
     }
 }
 
@@ -149,6 +156,14 @@ void PeripheralsController::notifyDragFactor(const unsigned char dragFactor) con
     {
         auto const distance = pow(dragFactor / Configurations::concept2MagicNumber, 1.0 / 3.0) * (2.0 * PI) * 10;
         bluetoothService.notifyDragFactor(static_cast<unsigned short>(distance), dragFactor);
+    }
+}
+
+void PeripheralsController::notifySwellSyncStatus(float inertia, bool isAutoDrag, int dragFactor, float magicNum) const 
+{
+    if constexpr (Configurations::isBleSErviceEnabled)
+    {
+        bluetoothService.notifySwellSyncStatus(inertia, isAutoDrag, dragFactor, magicNum);
     }
 }
 

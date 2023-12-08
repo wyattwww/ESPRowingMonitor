@@ -8,6 +8,7 @@
 #include "utils/power-manager.controller.h"
 
 static unsigned long lastUpdateTime = 0UL;
+static int lastDragFactor = 0;
 
 static unsigned long const msecsPerSec = 1000000;
 static unsigned long const secsPerMin = 60;

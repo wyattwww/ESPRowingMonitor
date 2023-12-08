@@ -80,7 +80,7 @@ void NetworkService::setup()
     WiFi.begin(Configurations::ssid.c_str(), Configurations::passphrase.c_str());
     Log.infoln("Connecting to wifi: %s", Configurations::ssid.c_str());
 
-    auto connectionTimeout = 20;
+    auto connectionTimeout = 1;
     Log.infoln(".");
     while (WiFiClass::status() != WL_CONNECTED)
     {
@@ -112,12 +112,23 @@ bool NetworkService::isAnyDeviceConnected() const
     return isServerStarted && webSocket.count() > 0;
 }
 
-void NetworkService::notifyClients(const RowingDataModels::RowingMetrics rowingMetrics, const unsigned char batteryLevel, const BleServiceFlag bleServiceFlag, const ArduinoLogLevel logLevel)
+void NetworkService::notifyClients(const RowingDataModels::RowingMetrics rowingMetrics, 
+                                    const unsigned char batteryLevel, 
+                                    const BleServiceFlag bleServiceFlag, 
+                                    const ArduinoLogLevel logLevel, 
+                                    const float flywheelInertia, 
+                                    const bool autoDragFactor,
+                                    const int dragFactor,
+                                    const float magicNumber)
 {
     string response;
     response.append("{\"batteryLevel\":" + to_string(batteryLevel));
     response.append(",\"bleServiceFlag\":" + to_string(static_cast<unsigned char>(bleServiceFlag)));
     response.append(",\"logLevel\":" + to_string(static_cast<unsigned char>(logLevel)));
+    response.append(",\"magicNumber\":" + to_string(magicNumber));
+    response.append(",\"flywheelInertia\":" + to_string(flywheelInertia));
+    response.append(",\"autoDragFactor\":" + to_string(autoDragFactor));
+    response.append(",\"dragFactor\":" + to_string(dragFactor));
     response.append(",\"revTime\":" + to_string(rowingMetrics.lastRevTime));
     response.append(",\"elapsedTime\":" + to_string(rowingMetrics.elapsedTime));
     response.append(",\"distance\":" + to_string(rowingMetrics.distance));
@@ -161,7 +172,7 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
 
         auto const requestOpCommand = request.substr(1, request.size() - 2);
 
-        Log.infoln("Incoming WS message");
+        //Log.infoln("Incoming WS message");
 
         auto const opCommand = parseOpCode(requestOpCommand);
 
@@ -170,24 +181,31 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
             Log.traceln("Invalid request opCommand size: %d, %s", opCommand.size(), requestOpCommand.c_str());
             return;
         }
+        /*else {
+            Log.traceln("Request opCommand size: %d, %s", opCommand.size(), requestOpCommand.c_str());
+        }*/
 
-        Log.infoln("Op Code: %d; Length: %d", opCommand[0], opCommand.size());
+        //Log.infoln("Op Code: %d; Length: %d", opCommand[0], opCommand.size());
 
-        switch (opCommand[0])
+        int opCommandCode = std::stoi(opCommand[0]);
+
+        switch (opCommandCode)
         {
         case static_cast<int>(PSCOpCodes::SetLogLevel):
         {
             Log.infoln("Set LogLevel OpCode");
 
-            if (opCommand.size() == 2 && opCommand[1] >= 0 && opCommand[1] <= 6)
+            int opCommandVal = std::stoi(opCommand[1]);
+
+            if (opCommand.size() == 2 && opCommandVal >= 0 && opCommandVal <= 6)
             {
-                Log.infoln("New LogLevel: %d", opCommand[1]);
-                eepromService.setLogLevel(static_cast<ArduinoLogLevel>(opCommand[1]));
+                Log.infoln("New LogLevel: %d", opCommandVal);
+                eepromService.setLogLevel(static_cast<ArduinoLogLevel>(opCommandVal));
 
                 return;
             }
 
-            Log.infoln("Invalid log level: %d", opCommand[1]);
+            Log.infoln("Invalid log level: %d", opCommandVal);
         }
         break;
 
@@ -195,19 +213,21 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
         {
             Log.infoln("Change BLE Service");
 
-            if (opCommand.size() == 2 && opCommand[1] >= 0 && opCommand[1] <= 2)
+            int opCommandVal = std::stoi(opCommand[1]);
+
+            if (opCommand.size() == 2 && opCommandVal >= 0 && opCommandVal <= 2)
             {
-                if( opCommand[1] == static_cast<unsigned char>(BleServiceFlag::CscService) ) {
+                if( opCommandVal == static_cast<unsigned char>(BleServiceFlag::CscService) ) {
                     Log.infoln("New BLE Service: %s", "CSC");
                 }
-                else if( opCommand[1] == static_cast<unsigned char>(BleServiceFlag::CpsService) ) {
+                else if( opCommandVal == static_cast<unsigned char>(BleServiceFlag::CpsService) ) {
                     Log.infoln("New BLE Service: %s", "CPS");
                 }
-                else if( opCommand[1] == static_cast<unsigned char>(BleServiceFlag::FtmsService) ) {
+                else if( opCommandVal == static_cast<unsigned char>(BleServiceFlag::FtmsService) ) {
                     Log.infoln("New BLE Service: %s", "FTMS");
                 }                
                 
-                eepromService.setBleServiceFlag(static_cast<BleServiceFlag>(opCommand[1]));
+                eepromService.setBleServiceFlag(static_cast<BleServiceFlag>(opCommandVal));
 
                 Log.verboseln("Restarting device");
                 Serial.flush();
@@ -221,6 +241,98 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
         }
         break;
 
+        case static_cast<int>(PSCOpCodes::ChangeMagicNumber):
+        {
+            Log.infoln("Change Magic Number");
+
+            float opCommandVal = std::stof(opCommand[1]);
+
+            if (opCommand.size() == 2 && opCommandVal > 1 && opCommandVal < 4)
+            {
+                Log.traceln("New magic num: %D", opCommandVal);
+
+                eepromService.setMagicNumber(opCommandVal);
+                //Log.verboseln("Restarting device");
+                //Serial.flush();
+                //esp_sleep_enable_timer_wakeup(1);
+                //esp_deep_sleep_start();
+
+                return;
+            }
+
+            Log.infoln("Invalid magic number: %D", opCommand[1]);
+        }
+        break;
+
+        case static_cast<int>(PSCOpCodes::ChangeInertia):
+        {
+            Log.infoln("Change Inertia");
+
+            float opCommandVal = std::stof(opCommand[1]);
+
+            if (opCommand.size() == 2 && opCommandVal >= 0 && opCommandVal <= 1)
+            {
+                Log.traceln("New inertia: %D", opCommandVal);
+
+                eepromService.setFlywheelInertia(opCommandVal);
+                //Log.verboseln("Restarting device");
+                //Serial.flush();
+                //esp_sleep_enable_timer_wakeup(1);
+                //esp_deep_sleep_start();
+
+                return;
+            }
+
+            Log.infoln("Invalid flywheel inertia: %D", opCommand[1]);
+        }
+        break;
+
+        case static_cast<int>(PSCOpCodes::ChangeDragFactor):
+        {
+            Log.infoln("Change Drag Factor");
+
+            int opCommandVal = std::stoi(opCommand[1]);
+
+            if (opCommand.size() == 2 && opCommandVal >= LOWER_DRAG_FACTOR_THRESHOLD && opCommandVal <= UPPER_DRAG_FACTOR_THRESHOLD)
+            {
+                Log.traceln("New drag factor: %d", opCommandVal);
+
+                eepromService.setDragFactor(opCommandVal);
+                //Log.verboseln("Restarting device");
+                //Serial.flush();
+                //esp_sleep_enable_timer_wakeup(1);
+                //esp_deep_sleep_start();
+
+                return;
+            }
+
+            Log.infoln("Invalid flywheel inertia: %D", opCommand[1]);
+        }
+        break;
+
+        case static_cast<int>(PSCOpCodes::ChangeAutoDragFactor):
+        {
+            Log.infoln("Change Auto Drag Factor");
+
+            int opCommandVal = std::stoi(opCommand[1]);
+
+            if (opCommand.size() == 2)
+            {
+                Log.traceln("New auto drag factor: %d", opCommandVal);
+
+                eepromService.setAutoDragFactor(opCommandVal);
+                //Log.verboseln("Restarting device");
+                //Serial.flush();
+                //esp_sleep_enable_timer_wakeup(1);
+                //esp_deep_sleep_start();
+
+                return;
+            }
+
+            Log.infoln("Invalid flywheel inertia: %D", opCommand[1]);
+        }
+        break;
+
         default:
         {
             Log.infoln("Not Supported Op Code: %d", opCommand[0]);
@@ -230,9 +342,9 @@ void NetworkService::handleWebSocketMessage(const void *const arg, uint8_t *cons
     }
 }
 
-vector<unsigned char> NetworkService::parseOpCode(string requestOpCommand)
+vector<string> NetworkService::parseOpCode(string requestOpCommand)
 {
-    auto opCommand = vector<unsigned char>();
+    auto opCommand = vector<string>();
 
     string parsed;
     while (!requestOpCommand.empty())
@@ -243,14 +355,32 @@ vector<unsigned char> NetworkService::parseOpCode(string requestOpCommand)
             position = requestOpCommand.size();
         }
         parsed = requestOpCommand.substr(0, position);
+        //Log.traceln("Parsed opCode: %s", parsed.c_str());
+
+        replaceInPlace(parsed, "\"", "");
         requestOpCommand.erase(0, position + 1);
         if (std::any_of(parsed.begin(), parsed.end(), [](unsigned char character)
-                        { return !(bool)std::isdigit(character); }))
+                        { return !(bool)std::isdigit(character) && !(bool)std::ispunct(character); }))
         {
             Log.traceln("Invalid opCode: %s", parsed.c_str());
-            return vector<unsigned char>();
+            return vector<string>();
         }
-        opCommand.push_back(std::stoi(parsed));
+        
+        opCommand.push_back(parsed);
     }
     return opCommand;
+}
+
+bool NetworkService::replaceInPlace( std::string& str, std::string const& replaceThis, std::string const& withThis ) {
+    bool replaced = false;
+    std::size_t i = str.find( replaceThis );
+    while( i != std::string::npos ) {
+        replaced = true;
+        str = str.substr( 0, i ) + withThis + str.substr( i+replaceThis.size() );
+        if( i < str.size()-withThis.size() )
+            i = str.find( replaceThis, i+withThis.size() );
+        else
+            i = std::string::npos;
+    }
+    return replaced;
 }

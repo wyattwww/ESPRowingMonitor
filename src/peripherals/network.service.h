@@ -19,7 +19,8 @@ class NetworkService
     unsigned long lastCleanupTime = 0UL;
 
     void handleWebSocketMessage(const void *arg, uint8_t *data, size_t len) const;
-    static std::vector<unsigned char> parseOpCode(std::string requestOpCommand);
+    static std::vector<string> parseOpCode(std::string requestOpCommand);
+    static bool replaceInPlace( std::string& str, std::string const& replaceThis, std::string const& withThis );
 
 public:
     explicit NetworkService(EEPROMService &_eepromService);
@@ -27,6 +28,13 @@ public:
     void update();
     void stopServer();
 
-    void notifyClients(const RowingDataModels::RowingMetrics rowingMetrics, unsigned char batteryLevel, BleServiceFlag bleServiceFlag, ArduinoLogLevel logLevel);
+    void notifyClients(const RowingDataModels::RowingMetrics rowingMetrics, 
+                        unsigned char batteryLevel, 
+                        BleServiceFlag bleServiceFlag, 
+                        ArduinoLogLevel logLevel, 
+                        const float flywheelInertia,
+                        const bool autoDragFactor,
+                        const int dragFactor,
+                        const float magicNumber);
     bool isAnyDeviceConnected() const;
 };

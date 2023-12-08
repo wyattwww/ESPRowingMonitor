@@ -49,6 +49,7 @@ public:
     void notifyBattery(unsigned char batteryLevel);
     void updateData(const RowingDataModels::RowingMetrics data);
     void notifyDragFactor(unsigned char dragFactor) const;
+    void notifySwellSyncStatus(float inertia, bool isAutoDrag, int dragFactor, float magicNum) const;
     bool isAnyDeviceConnected();
     unsigned long long getElapsedTIme();
 };

@@ -23,6 +23,14 @@ void setup()
     powerManagerController.begin();
 
     peripheralController.notifyBattery(powerManagerController.getBatteryLevel());
+    int dragFactor = static_cast<int>(strokeController.getDragFactor());
+    if( !eepromService.isAutoDragFactor() ) {
+        dragFactor = eepromService.getDragFactor();
+    }
+    if( dragFactor == 0 ) {
+        dragFactor = strokeService.dragCoefficient * 1e6;
+    }
+    peripheralController.notifySwellSyncStatus(eepromService.getFlywheerInertia(), eepromService.isAutoDragFactor(), dragFactor, eepromService.getMagicNumber());
 }
 
 // execution time
@@ -53,6 +61,16 @@ void loop()
     if (strokeController.getStrokeCount() != strokeController.getPreviousStrokeCount() || now - lastUpdateTime > minUpdateInterval)
     {
         peripheralController.updateData(strokeController.getAllData());
+
+        int dragFactor = static_cast<int>(strokeController.getDragFactor());
+        if( !eepromService.isAutoDragFactor() ) {
+            dragFactor = eepromService.getDragFactor();
+        }
+        if( dragFactor == 0 ) {
+            dragFactor = strokeService.dragCoefficient * 1e6;
+        }
+        peripheralController.notifySwellSyncStatus(eepromService.getFlywheerInertia(), eepromService.isAutoDragFactor(), dragFactor, eepromService.getMagicNumber());
+        
         lastUpdateTime = now;
     }
 
@@ -61,12 +79,15 @@ void loop()
         Log.infoln("batteryLevel: %d", powerManagerController.getBatteryLevel());
         Log.infoln("bleServiceFlag: %d", eepromService.getBleServiceFlag());
         Log.infoln("logLevel: %d", eepromService.getLogLevel());
+        Log.infoln("magicNumber: %D", eepromService.getMagicNumber());
+        Log.infoln("flywheelInertia: %D", eepromService.getFlywheerInertia());
         Log.infoln("revTime: %u", strokeController.getLastRevTime());
         Log.infoln("strokeTime: %u", strokeController.getLastStrokeTime());
         Log.infoln("strokeCount: %u", strokeController.getStrokeCount());
         Log.infoln("totalCalories: %u", strokeService.getTotalCalories());
         Log.infoln("driveDuration: %D", strokeController.getDriveDuration());
         Log.infoln("recoveryDuration: %D", strokeController.getRecoveryDuration());
+        Log.infoln("autoDragFactor: %d", eepromService.isAutoDragFactor());
         Log.infoln("dragFactor: %d", strokeController.getDragFactor());
         Log.infoln("power: %d", strokeController.getAvgStrokePower());
         Log.infoln("distance: %D", strokeController.getDistance() / 100.0);
@@ -78,6 +99,7 @@ void loop()
         // - connected: 900-2700
         // auto start = micros();
         peripheralController.notifyDragFactor(strokeController.getDragFactor());
+
         strokeController.setPreviousStrokeCount();
         // auto stop = micros();
         // Serial.print("notifyDragFactor: ");

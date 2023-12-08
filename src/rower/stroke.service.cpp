@@ -54,6 +54,12 @@ bool StrokeService::isFlywheelPowered() const
 
 void StrokeService::calculateDragCoefficient()
 {
+    if( !eepromService.isAutoDragFactor() ) 
+    {
+        dragCoefficient = eepromService.getDragFactor() / 1e6;
+        return;
+    }
+    
     if (recoveryDuration > Configurations::maxDragFactorRecoveryPeriod || recoveryDeltaTimes.size() < Configurations::impulseDataArrayLength)
     {
         //Log.traceln("calculateDragCoefficient ret 1");
@@ -66,7 +72,7 @@ void StrokeService::calculateDragCoefficient()
         return;
     }
 
-    auto rawNewDragCoefficient = (recoveryDeltaTimes.slope() * Configurations::flywheelInertia) / angularDisplacementPerImpulse;
+    auto rawNewDragCoefficient = (recoveryDeltaTimes.slope() * eepromService.getFlywheerInertia()) / angularDisplacementPerImpulse;
 
     if (rawNewDragCoefficient > Configurations::upperDragFactorThreshold ||
         rawNewDragCoefficient < Configurations::lowerDragFactorThreshold)
@@ -74,6 +80,8 @@ void StrokeService::calculateDragCoefficient()
         //Log.traceln("calculateDragCoefficient ret 3, rawNewDragCoefficient: %D", rawNewDragCoefficient);
         return;
     }
+
+    //Log.traceln("calculateDragCoefficient ret 4, rawNewDragCoefficient: %D", rawNewDragCoefficient);
 
     if (Configurations::dragCoefficientsArrayLength > 1)
     {
@@ -265,7 +273,7 @@ void StrokeService::processData(const RowingDataModels::FlywheelData data)
     currentAngularVelocity = angularVelocityMatrix[0].median();
     currentAngularAcceleration = angularAccelerationMatrix[0].median();
 
-    currentTorque = Configurations::flywheelInertia * currentAngularAcceleration + dragCoefficient * pow(currentAngularVelocity, 2);
+    currentTorque = eepromService.getFlywheerInertia() * currentAngularAcceleration + dragCoefficient * pow(currentAngularVelocity, 2);
 
     // If rotation delta exceeds the max debounce time and we are in Recovery Phase, the rower must have stopped. Setting cyclePhase to "Stopped"
     if (cyclePhase == CyclePhase::Recovery && rowingTotalTime - recoveryStartTime > Configurations::rowingStoppedThresholdPeriod)

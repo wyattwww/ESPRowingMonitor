@@ -41,8 +41,6 @@ class StrokeService
     unsigned long long revTime = 0ULL;
     Configurations::precision avgStrokePower = 0;
 
-    Configurations::precision dragCoefficient = 101.0 / 1e6;
-
     std::array<Configurations::precision, Configurations::dragCoefficientsArrayLength> dragCoefficients{};
 
     Configurations::precision totalAngularDisplacement = 0;
@@ -89,6 +87,8 @@ class StrokeService
 
 public:
     StrokeService();
+
+    Configurations::precision dragCoefficient = 101.0 / 1e6;
 
     RowingDataModels::RowingMetrics getData();
     void processData(RowingDataModels::FlywheelData data);
