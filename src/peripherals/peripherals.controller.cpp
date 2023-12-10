@@ -154,7 +154,7 @@ void PeripheralsController::notifyDragFactor(const unsigned char dragFactor) con
 {
     if constexpr (Configurations::isBleSErviceEnabled)
     {
-        auto const distance = pow(dragFactor / Configurations::concept2MagicNumber, 1.0 / 3.0) * (2.0 * PI) * 10;
+        auto const distance = pow(dragFactor / (double)Configurations::concept2MagicNumber, 1.0 / 3.0) * (2.0 * PI) * 10;
         bluetoothService.notifyDragFactor(static_cast<unsigned short>(distance), dragFactor);
     }
 }

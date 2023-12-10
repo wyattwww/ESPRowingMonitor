@@ -74,7 +74,7 @@ void NetworkService::setup()
     WiFi.mode(WIFI_STA);
     WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info)
                  {
-        	Log.traceln("Wifi disconnected, trying to reconnect");
+        	Log.verboseln("Wifi disconnected, trying to reconnect");
             WiFi.reconnect(); },
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.begin(Configurations::ssid.c_str(), Configurations::passphrase.c_str());

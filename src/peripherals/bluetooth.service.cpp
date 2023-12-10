@@ -28,7 +28,7 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
 {
     NimBLEAttValue message = pCharacteristic->getValue();
 
-    Log.verboseln("Incoming connection");
+    Log.traceln("onWrite Incoming connection");
 
     if (message.length() == 0)
     {
@@ -128,9 +128,9 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
                 pCharacteristic->setValue(temp);
                 pCharacteristic->indicate();
 
-                //Log.verboseln("Restarting device in 5s");
-                //delay(5000);
-                //esp_restart();
+                Log.verboseln("Restarting device in 5s");
+                delay(5000);
+                esp_restart();
 
                 break;
             }
@@ -163,9 +163,9 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
                 pCharacteristic->setValue(temp);
                 pCharacteristic->indicate();
 
-                //Log.verboseln("Restarting device in 5s");
-                //delay(5000);
-                //esp_restart();
+                Log.verboseln("Restarting device in 5s");
+                delay(5000);
+                esp_restart();
 
                 break;
             }
@@ -197,9 +197,9 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
                 pCharacteristic->setValue(temp);
                 pCharacteristic->indicate();
 
-                //Log.verboseln("Restarting device in 5s");
-                //delay(5000);
-                //esp_restart();
+                Log.verboseln("Restarting device in 5s");
+                delay(5000);
+                esp_restart();
 
                 break;
             }
@@ -231,9 +231,9 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
                 pCharacteristic->setValue(temp);
                 pCharacteristic->indicate();
 
-                //Log.verboseln("Restarting device in 5s");
-                //delay(5000);
-                //esp_restart();
+                Log.verboseln("Restarting device in 5s");
+                delay(5000);
+                esp_restart();
 
                 break;
             }

@@ -187,7 +187,7 @@ void StrokeService::recoveryEnd()
     calculateDragCoefficient();
     calculateAvgStrokePower();
 
-    distancePerAngularDisplacement = pow((dragCoefficient * 1e6) / Configurations::concept2MagicNumber, 1 / 3.0);
+    distancePerAngularDisplacement = pow((dragCoefficient * 1e6) / eepromService.getMagicNumber(), 1 / 3.0);
     distance = recoveryStartDistance + distancePerAngularDisplacement * (distance == 0 ? rowingTotalAngularDisplacement : recoveryTotalAngularDisplacement);
     if (distance > 0)
     {
