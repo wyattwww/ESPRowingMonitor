@@ -247,6 +247,58 @@ void BluetoothService::ControlPointCallbacks::onWrite(NimBLECharacteristic *cons
         }
         break;
 
+        case static_cast<int>(PSCOpCodes::WifiSetup):
+        {
+            Log.infoln("Wifi Setup");
+
+            if (message.length() > 0)
+            { 
+                int numChars = static_cast<int>(message[1]);
+
+                Log.infoln("Received num chars %d", message[1]);
+
+                // get characters
+                string wifiStr = "";
+                for( int i=0; i<numChars; i++ ) 
+                {
+                    wifiStr += message[i+2];
+                }
+                
+                // parse out ssid and password
+                int dividerPos = wifiStr.find("//");
+                string ssid = wifiStr.substr(0, dividerPos);
+                string pw = wifiStr.substr(dividerPos+2);
+
+                Log.infoln("Received ssid %s", ssid.c_str());
+                Log.infoln("Received pw %s", pw.c_str());
+                
+                // set wifi credentials
+                bleService.eepromService.setSSID(ssid);
+                bleService.eepromService.setPassphrase(pw);
+
+                array<uint8_t, 3> temp = {
+                    static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                    static_cast<unsigned char>(message[0]),
+                    static_cast<unsigned char>(PSCResponseOpCodes::Successful)};
+                pCharacteristic->setValue(temp);
+                pCharacteristic->indicate();
+
+                Log.verboseln("Restarting device in 5s");
+                delay(5000);
+                esp_restart();
+
+                break;
+            }
+
+            array<uint8_t, 3> temp = {
+                static_cast<unsigned char>(PSCOpCodes::ResponseCode),
+                static_cast<unsigned char>(message[0]),
+                static_cast<unsigned char>(PSCResponseOpCodes::InvalidParameter)};
+
+            pCharacteristic->setValue(temp);
+        }
+        break;
+
         default:
         {
             Log.infoln("Not Supported Op Code: %d", message[0]);
@@ -340,9 +392,12 @@ void BluetoothService::notifySwellSyncStatus(const float inertia, const bool isA
     unsigned char magicLsb = (unsigned)magicInt & 0xff; // mask the lower 8 bits
     unsigned char magicMsb = (unsigned)magicInt >> 8;   // shift the higher 8 bits
 
+    String ipaddr = WiFi.localIP().toString();
+    
     vector<unsigned char> bytes = { inertiaMsb, inertiaLsb, isAutoB, dragMsb, dragLsb, magicMsb, magicLsb };
 
     std::string value(bytes.begin(), bytes.end());
+    value.append(ipaddr.c_str());
 
     //Log.traceln("Notifying Swellsync Status: %s", value.c_str());
 
@@ -479,8 +534,8 @@ void BluetoothService::notifyFtms(const unsigned short strokeRate, const unsigne
             // todo: eventhough mathematically correct, setting 0xFFFF (65535s) causes some ugly spikes
             // in some applications which could shift the axis (i.e. workout diagrams in MyHomeFit)
             // so instead for now we use 0 here
-            static_cast<unsigned char>(lround(pace)),
-            static_cast<unsigned char>(lround(pace) >> 8),
+            static_cast<unsigned char>(lround(500.0/pace)),
+            static_cast<unsigned char>(lround(500.0/pace) >> 8),
 
             // Instantaneous Power in watts
             static_cast<unsigned char>(power),
@@ -501,6 +556,8 @@ void BluetoothService::notifyFtms(const unsigned short strokeRate, const unsigne
             static_cast<unsigned char>(elapsedTime >> 8),
         };
 
+        Log.infoln("BT pace: %D", pace); 
+        
         // auto stop = micros();
         // Serial.print("data calc: ");
         // Serial.println(stop - start);
@@ -657,11 +714,11 @@ NimBLEService *BluetoothService::setupFtmsServices(NimBLEServer *const server)
     //0x2AD3
     ftmsTrainingStatusCharacteristic = ftmsService->createCharacteristic(fitnessTrainingStatusCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
     
-    //0x2AD9
-    ftmsService->createCharacteristic(fitnessControlCharacteristicUuid, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::INDICATE)->setCallbacks(&controlPointCallbacks);
-
     //0x5354
     swellSyncStatusCharacteristic = ftmsService->createCharacteristic(swellSyncStatusCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+
+    //0x2AD9
+    ftmsService->createCharacteristic(fitnessControlCharacteristicUuid, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::INDICATE)->setCallbacks(&controlPointCallbacks);
 
     return ftmsService;
 }

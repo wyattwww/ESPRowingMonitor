@@ -57,7 +57,7 @@ void loop()
     // - connected 1900-2200 microsec
     // auto start = micros();
     auto const now = millis();
-    auto const minUpdateInterval = 4000;
+    auto const minUpdateInterval = 1500;
     if (strokeController.getStrokeCount() != strokeController.getPreviousStrokeCount() || now - lastUpdateTime > minUpdateInterval)
     {
         peripheralController.updateData(strokeController.getAllData());
@@ -76,6 +76,7 @@ void loop()
 
     if (strokeController.getStrokeCount() != strokeController.getPreviousStrokeCount())
     {
+        Log.infoln("pace: %D", strokeController.getPace());
         Log.infoln("batteryLevel: %d", powerManagerController.getBatteryLevel());
         Log.infoln("bleServiceFlag: %d", eepromService.getBleServiceFlag());
         Log.infoln("logLevel: %d", eepromService.getLogLevel());

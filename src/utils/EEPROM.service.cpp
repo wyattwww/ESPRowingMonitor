@@ -45,6 +45,16 @@ void EEPROMService::setup()
         Log.infoln("Setting auto drag factor to default to %d", 1);
         preferences.putBool(autoDragFactorAddress, 1);
     }
+    if (!preferences.isKey(ssidAddress))
+    {
+        Log.infoln("Setting ssid to default to %s", Configurations::ssid);
+        preferences.putString(ssidAddress, Configurations::ssid.c_str());
+    }
+    if (!preferences.isKey(passphraseAddress))
+    {
+        Log.infoln("Setting passphrase to default to %s", Configurations::passphrase);
+        preferences.putString(passphraseAddress, Configurations::passphrase.c_str());
+    }
 
     logLevel = static_cast<ArduinoLogLevel>(preferences.getUChar(logLevelAddress, static_cast<unsigned char>(Configurations::defaultLogLevel)));
     bleServiceFlag = static_cast<BleServiceFlag>(preferences.getUChar(bleServiceFlagAddress, static_cast<unsigned char>(Configurations::defaultBleServiceFlag)));
@@ -52,6 +62,8 @@ void EEPROMService::setup()
     flywheelInertia = static_cast<float>(preferences.getFloat(inertiaAddress, static_cast<float>(Configurations::flywheelInertia)));
     dragFactor = static_cast<int>(preferences.getInt(dragFactorAddress, 101));
     autoDragFactor = static_cast<bool>(preferences.getBool(autoDragFactorAddress, true));
+    ssid = preferences.getString(ssidAddress, Configurations::ssid.c_str()).c_str();
+    passphrase = preferences.getString(passphraseAddress, Configurations::passphrase.c_str()).c_str();
 
     Log.infoln("%s: %d", logLevelAddress, logLevel);
     Log.infoln("%s: %d", bleServiceFlagAddress, bleServiceFlag);
@@ -59,6 +71,8 @@ void EEPROMService::setup()
     Log.infoln("%s: %D", inertiaAddress, flywheelInertia);
     Log.infoln("%s: %d", dragFactorAddress, dragFactor);
     Log.infoln("%s: %d", autoDragFactorAddress, autoDragFactor);
+    Log.infoln("%s: %s", ssidAddress, ssid);
+    Log.infoln("%s: %s", passphraseAddress, passphrase);
 }
 
 void EEPROMService::setLogLevel(ArduinoLogLevel newLogLevel)
@@ -128,6 +142,18 @@ void EEPROMService::setDragFactor(int drag)
     preferences.putInt(dragFactorAddress, dragFactor);
 }
 
+void EEPROMService::setSSID(string id) 
+{
+    ssid = id;
+    preferences.putString(ssidAddress, ssid.c_str());
+}
+
+void EEPROMService::setPassphrase(string pw) 
+{
+    passphrase = pw;
+    preferences.putString(passphraseAddress, passphrase.c_str());
+}
+
 void EEPROMService::resetAll() 
 {
     setMagicNumber(Configurations::concept2MagicNumber);
@@ -164,4 +190,14 @@ bool EEPROMService::isAutoDragFactor() const
 int EEPROMService::getDragFactor() const
 {
     return dragFactor;
+}
+
+string EEPROMService::getSSID() const
+{
+    return ssid;
+}
+
+string EEPROMService::getPassphrase() const
+{
+    return passphrase;
 }

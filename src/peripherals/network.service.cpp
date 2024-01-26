@@ -12,6 +12,8 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+bool NetworkService::isServerStarted = false;
+
 NetworkService::NetworkService(EEPROMService &_eepromService) : eepromService(_eepromService), server(Configurations::port), webSocket("/ws") {}
 
 void NetworkService::update()
@@ -24,7 +26,7 @@ void NetworkService::update()
         webSocket.cleanupClients(2);
     }
 
-    if (!isServerStarted && WiFiClass::status() == WL_CONNECTED)
+    if (!NetworkService::isServerStarted && WiFiClass::status() == WL_CONNECTED)
     {
         Log.infoln("Connected to the WiFi network");
         Log.infoln("Local ESP32 IP:  %p", WiFi.localIP());
@@ -63,7 +65,7 @@ void NetworkService::update()
             }
         }
         server.begin();
-        isServerStarted = true;
+        NetworkService::isServerStarted = true;
     }
 }
 
@@ -77,8 +79,8 @@ void NetworkService::setup()
         	Log.verboseln("Wifi disconnected, trying to reconnect");
             WiFi.reconnect(); },
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
-    WiFi.begin(Configurations::ssid.c_str(), Configurations::passphrase.c_str());
-    Log.infoln("Connecting to wifi: %s", Configurations::ssid.c_str());
+    WiFi.begin(eepromService.getSSID().c_str(), eepromService.getPassphrase().c_str());
+    Log.infoln("Connecting to wifi: %s", eepromService.getSSID().c_str());
 
     auto connectionTimeout = 1;
     Log.infoln(".");
@@ -109,7 +111,7 @@ void NetworkService::stopServer()
 
 bool NetworkService::isAnyDeviceConnected() const
 {
-    return isServerStarted && webSocket.count() > 0;
+    return NetworkService::isServerStarted && webSocket.count() > 0;
 }
 
 void NetworkService::notifyClients(const RowingDataModels::RowingMetrics rowingMetrics, 
@@ -121,6 +123,10 @@ void NetworkService::notifyClients(const RowingDataModels::RowingMetrics rowingM
                                     const int dragFactor,
                                     const float magicNumber)
 {
+    if( rowingMetrics.pace > 0 ) {
+        Log.infoln("Net pace: %D", rowingMetrics.pace); 
+    }
+    
     string response;
     response.append("{\"batteryLevel\":" + to_string(batteryLevel));
     response.append(",\"bleServiceFlag\":" + to_string(static_cast<unsigned char>(bleServiceFlag)));

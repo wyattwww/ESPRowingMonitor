@@ -72,6 +72,11 @@ Configurations::precision StrokeController::getDriveDuration() const
     return rowerState.driveDuration / 1e6;
 }
 
+Configurations::precision StrokeController::getPace() const
+{
+    return rowerState.pace;
+}
+
 Configurations::precision StrokeController::getRecoveryDuration() const
 {
     return rowerState.recoveryDuration / 1e6;

@@ -89,23 +89,13 @@ void PeripheralsController::updateData(const RowingDataModels::RowingMetrics dat
     bleStrokeTimeData = lroundl((data.lastStrokeTime / secInMicroSec) * 1024) % USHRT_MAX;
     bleStrokeCountData = data.strokeCount;
     bleAvgStrokePowerData = static_cast<short>(lround(data.avgStrokePower));
+    blePaceData = data.pace;
 
     if( data.strokeCount > lastStrokeCount ) 
     {
         bleStrokeRateData = ((data.strokeCount - lastStrokeCount) / ((data.lastStrokeTime - lastStrokeTime) / secInMicroSec)) * 60;
     }
 
-
-    if( bleRevCountData > 0 && bleRevCountData > lastDistance ) 
-    {
-        blePaceData = 500 / ((bleRevCountData - lastDistance) / 100 / ((data.lastRevTime - lastRTime) / secInMicroSec));
-    }
-
-    if( blePaceData < 0 ) 
-    {
-        blePaceData = 0.0;
-    }
-    
     bleCaloriesTotalData = data.totalCalories;
     bleCaloriesPerHourData = data.totalCaloriesPerHour;
     bleCaloriesPerMinData = data.totalCaloriesPerMinute;
@@ -113,8 +103,6 @@ void PeripheralsController::updateData(const RowingDataModels::RowingMetrics dat
 
     lastStrokeCount = data.strokeCount;
     lastStrokeTime = data.lastStrokeTime;
-    lastDistance = bleRevCountData;
-    lastRTime = data.lastRevTime;
     
     if constexpr (Configurations::isWebsocketEnabled)
     {
@@ -147,6 +135,7 @@ void PeripheralsController::notify() const
     if (eepromService.getBleServiceFlag() == BleServiceFlag::FtmsService)
     {
         bluetoothService.notifyFtms(bleStrokeRateData, bleStrokeCountData, bleRevCountData/100.0, blePaceData, bleAvgStrokePowerData, bleCaloriesTotalData, bleCaloriesPerHourData, bleCaloriesPerMinData, bleElapsedTimeData );
+        
     }
 }
 

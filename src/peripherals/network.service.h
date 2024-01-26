@@ -15,7 +15,6 @@ class NetworkService
     AsyncWebServer server;
     AsyncWebSocket webSocket;
 
-    bool isServerStarted = false;
     unsigned long lastCleanupTime = 0UL;
 
     void handleWebSocketMessage(const void *arg, uint8_t *data, size_t len) const;
@@ -23,6 +22,8 @@ class NetworkService
     static bool replaceInPlace( std::string& str, std::string const& replaceThis, std::string const& withThis );
 
 public:
+    static bool isServerStarted;
+
     explicit NetworkService(EEPROMService &_eepromService);
     void setup();
     void update();

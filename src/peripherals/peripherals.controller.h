@@ -18,9 +18,7 @@ class PeripheralsController
 
     unsigned short lastStrokeCount = 0;
     unsigned long long lastStrokeTime = 0;
-    unsigned long long lastRTime = 0;
-    unsigned int lastDistance = 0;
-
+    
     unsigned char batteryLevelData = 0;
     unsigned short bleRevTimeData = 0;
     unsigned int bleRevCountData = 0;

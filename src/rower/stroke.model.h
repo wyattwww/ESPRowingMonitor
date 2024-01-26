@@ -31,5 +31,6 @@ namespace RowingDataModels
         unsigned int totalCalories;
         unsigned int totalCaloriesPerHour;
         unsigned int totalCaloriesPerMinute;
+        Configurations::precision pace;
     };
 }

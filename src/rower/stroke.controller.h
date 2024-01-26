@@ -48,6 +48,7 @@ public:
     Configurations::precision getDistance() const;
     Configurations::precision getRecoveryDuration() const;
     Configurations::precision getDriveDuration() const;
+    Configurations::precision getPace() const;
     short getAvgStrokePower() const;
     unsigned char getDragFactor() const;
 };

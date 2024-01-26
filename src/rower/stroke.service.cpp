@@ -223,6 +223,14 @@ void StrokeService::recoveryEnd()
 RowingDataModels::RowingMetrics StrokeService::getData()
 {
     unsigned long long elapsed = getElapsedTime();
+    Configurations::precision pace = 0;
+    if( (revTime - lastRevTime)> 0 ) {
+        pace = (distance - lastDistance) / 100 / ((revTime - lastRevTime) / 1e6),
+        //Log.infoln("Data pace: %D", pace); 
+
+        lastRevTime = revTime;
+        lastDistance = distance;
+    }
 
     return RowingDataModels::RowingMetrics{
         .distance = distance,
@@ -237,7 +245,8 @@ RowingDataModels::RowingMetrics StrokeService::getData()
         .elapsedTime = elapsed,
         .totalCalories = totalCalories,
         .totalCaloriesPerHour = totalCaloriesPerHour,
-        .totalCaloriesPerMinute = totalCaloriesPerMinute};
+        .totalCaloriesPerMinute = totalCaloriesPerMinute,
+        .pace = pace};
 }
 
 unsigned int StrokeService::getTotalCalories()

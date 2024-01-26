@@ -57,6 +57,7 @@ enum class PSCOpCodes : unsigned char
     ChangeAutoDragFactor = 20U,
     ChangeDragFactor = 21U,
     ChangeMagicNumber = 22U,
+    WifiSetup = 23U,
     ResponseCode = 32U
 };
 

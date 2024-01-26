@@ -17,6 +17,8 @@ class EEPROMService
     static constexpr char const *inertiaAddress = "inertia5";
     static constexpr char const *autoDragFactorAddress = "autoDragFactor";
     static constexpr char const *dragFactorAddress = "dragFactor";
+    static constexpr char const *ssidAddress = "wifiSSID";
+    static constexpr char const *passphraseAddress = "wifiPassphrase";
 
     ArduinoLogLevel logLevel = Configurations::defaultLogLevel;
     BleServiceFlag bleServiceFlag = Configurations::defaultBleServiceFlag;
@@ -24,6 +26,8 @@ class EEPROMService
     float flywheelInertia = Configurations::flywheelInertia;
     bool autoDragFactor = true;
     int dragFactor = 101;
+    string ssid = Configurations::ssid;
+    string passphrase = Configurations::passphrase;
 
 public:
     explicit EEPROMService(Preferences &_preferences);
@@ -36,6 +40,8 @@ public:
     void setFlywheelInertia(float inertia);
     void setAutoDragFactor(bool isAuto);
     void setDragFactor(int drag);
+    void setSSID(string id);
+    void setPassphrase(string pw);
     void resetAll();
 
     BleServiceFlag getBleServiceFlag() const;
@@ -44,4 +50,6 @@ public:
     float getFlywheerInertia() const;
     bool isAutoDragFactor() const;
     int getDragFactor() const;
+    string getSSID() const;
+    string getPassphrase() const;
 };

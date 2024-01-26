@@ -85,6 +85,9 @@ class StrokeService
     
     unsigned long long getElapsedTime();
 
+    Configurations::precision lastDistance = 0;
+    int lastRevTime = 0;
+
 public:
     StrokeService();
 

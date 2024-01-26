@@ -34,7 +34,7 @@ class BluetoothService
     EEPROMService &eepromService;
     ServerCallbacks serverCallbacks;
     ControlPointCallbacks controlPointCallbacks;
-
+    
     //CSC
 
     static unsigned char constexpr sensorLocationFlag = SensorLocations::Other;
@@ -86,7 +86,7 @@ class BluetoothService
 	static unsigned short const fitnessControlCharacteristicUuid = 0x2AD9;
     static unsigned short const fitnessTrainingStatusCharacteristicUuid = 0x2AD3;
     static unsigned short const swellSyncStatusCharacteristicUuid = 0x5354;
-
+    
     static unsigned short const bleAppearanceFitnessMachine = 1158;
 
     static unsigned short const userDataServiceUUID = 0x181C;
@@ -105,7 +105,7 @@ class BluetoothService
     NimBLECharacteristic *ftmsRowerDataCharacteristic = nullptr;
     NimBLECharacteristic *ftmsControlCharacteristic = nullptr;
     NimBLECharacteristic *swellSyncStatusCharacteristic = nullptr;
-
+    
     void setupBleDevice();
     void setupServices();
     NimBLEService *setupCscServices(NimBLEServer *server);
