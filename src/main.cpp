@@ -1,7 +1,5 @@
 #include "ArduinoLog.h"
-
 #include "globals.h"
-
 #include "test.array.h"
 
 void setup()
@@ -93,6 +91,18 @@ void loop()
         Log.infoln("power: %d", strokeController.getAvgStrokePower());
         Log.infoln("distance: %D", strokeController.getDistance() / 100.0);
         Log.infoln("elapsedTime: %u", peripheralController.getElapsedTIme());
+        string forcesStr = "handleForces: [";
+        for (auto const &handleForce : strokeController.getAllData().driveHandleForces)
+        {
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "%g", handleForce);
+
+            forcesStr += buffer;
+            forcesStr += ", ";
+        }
+        forcesStr += "]";
+        Log.infoln(forcesStr.c_str());
+        
         Log.infoln("--------");
 
         // execution time

@@ -31,6 +31,7 @@ class PeripheralsController
     unsigned int bleCaloriesPerHourData = 0;
     unsigned int bleCaloriesPerMinData = 0;
     unsigned long long bleElapsedTimeData = 0;
+    std::vector<Configurations::precision> bleDriveHandleForces;
 
     CRGB::HTMLColorCode ledColor = CRGB::Black;
     inline static CRGB leds[1];

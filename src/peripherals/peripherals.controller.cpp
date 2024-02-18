@@ -90,6 +90,7 @@ void PeripheralsController::updateData(const RowingDataModels::RowingMetrics dat
     bleStrokeCountData = data.strokeCount;
     bleAvgStrokePowerData = static_cast<short>(lround(data.avgStrokePower));
     blePaceData = data.pace;
+    bleDriveHandleForces = data.driveHandleForces;
 
     if( data.strokeCount > lastStrokeCount ) 
     {
@@ -135,7 +136,7 @@ void PeripheralsController::notify() const
     if (eepromService.getBleServiceFlag() == BleServiceFlag::FtmsService)
     {
         bluetoothService.notifyFtms(bleStrokeRateData, bleStrokeCountData, bleRevCountData/100.0, blePaceData, bleAvgStrokePowerData, bleCaloriesTotalData, bleCaloriesPerHourData, bleCaloriesPerMinData, bleElapsedTimeData );
-        
+        bluetoothService.notifySwellSyncForces(bleDriveHandleForces);
     }
 }
 

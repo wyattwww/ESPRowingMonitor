@@ -408,6 +408,40 @@ void BluetoothService::notifySwellSyncStatus(const float inertia, const bool isA
     }
 }
 
+void BluetoothService::notifySwellSyncForces(std::vector<Configurations::precision> driveHandleForces) const
+{
+    if( swellSyncForcesCharacteristic == nullptr ) 
+    {
+        return;
+    }
+
+    std::vector<Configurations::precision> testForces = driveHandleForces; //{5.81691, 24.5625, 43.4584, 62.1487, 89.1352, 116.231, 130.96, 133.745, 134.061, 134.403};
+
+    std::vector<unsigned char> bytes {};
+
+    unsigned char numBits = (unsigned)testForces.size();
+    bytes.push_back(numBits);
+
+    for (auto const &handleForce : testForces)
+    {
+        int forceVal = handleForce*100.0;
+        unsigned char thisBitLsb = (unsigned)forceVal;
+        unsigned char thisBitMsb = (unsigned)forceVal >> 8;
+        bytes.push_back(thisBitLsb);
+        bytes.push_back(thisBitMsb);
+    }
+    
+    std::string value(bytes.begin(), bytes.end());
+
+    //Log.traceln("Notifying Swellsync Forces: %s", value.c_str());
+
+    swellSyncForcesCharacteristic->setValue(value);
+    if (swellSyncForcesCharacteristic->getSubscribedCount() > 0)
+    {
+        swellSyncForcesCharacteristic->notify();
+    }
+}
+
 void BluetoothService::notifyCsc(const unsigned short revTime, const unsigned int revCount, const unsigned short strokeTime, const unsigned short strokeCount) const
 {
     if (cscMeasurementCharacteristic->getSubscribedCount() > 0)
@@ -716,6 +750,9 @@ NimBLEService *BluetoothService::setupFtmsServices(NimBLEServer *const server)
     
     //0x5354
     swellSyncStatusCharacteristic = ftmsService->createCharacteristic(swellSyncStatusCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+
+    //0x5355
+    swellSyncForcesCharacteristic = ftmsService->createCharacteristic(swellSyncForcesCharacteristicUuid, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
 
     //0x2AD9
     ftmsService->createCharacteristic(fitnessControlCharacteristicUuid, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::INDICATE)->setCallbacks(&controlPointCallbacks);
