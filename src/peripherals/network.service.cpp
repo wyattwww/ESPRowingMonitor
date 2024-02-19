@@ -14,7 +14,7 @@ using std::vector;
 
 bool NetworkService::isServerStarted = false;
 
-NetworkService::NetworkService(EEPROMService &_eepromService) : eepromService(_eepromService), server(Configurations::port), webSocket("/ws") {}
+NetworkService::NetworkService(EEPROMService &_eepromService) : eepromService(_eepromService), server(Configurations::port), otaServer(Configurations::otaPort), webSocket("/ws") {}
 
 void NetworkService::update()
 {
@@ -65,8 +65,18 @@ void NetworkService::update()
             }
         }
         server.begin();
+
+        otaServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+            request->send(200, "text/plain", "Hello ocean!");
+        });
+        ElegantOTA.begin(&otaServer);    // Start ElegantOTA
+        otaServer.begin();
+        Serial.println("HTTP OTA server started");
+
         NetworkService::isServerStarted = true;
     }
+
+    ElegantOTA.loop();
 }
 
 void NetworkService::setup()

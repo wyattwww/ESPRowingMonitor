@@ -1,4 +1,7 @@
+#include "settings.h"
+
 #include <string>
+#include <ElegantOTA.h>
 
 #include "AsyncTCP.h"
 #include "ESPAsyncWebServer.h"
@@ -14,6 +17,8 @@ class NetworkService
 
     AsyncWebServer server;
     AsyncWebSocket webSocket;
+
+    AsyncWebServer otaServer;
 
     unsigned long lastCleanupTime = 0UL;
 

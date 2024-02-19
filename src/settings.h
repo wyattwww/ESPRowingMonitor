@@ -71,4 +71,9 @@
 
 #define SIMULATE_STROKES 0
 
+#define ELEGANTOTA_USE_ASYNC_WEBSERVER 1
+#define ELEGANTOTA_DEBUG 1
+#define UPDATE_DEBUG 1
+#define ESP32 1
+
 // NOLINTEND(cppcoreguidelines-macro-usage)

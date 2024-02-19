@@ -53,6 +53,7 @@ public:
     static inline string const ssid = TOSTRING(LOCAL_SSID);
     static inline string const passphrase = TOSTRING(PASSPHRASE);
     static unsigned char const port = PORT;
+    static unsigned char const otaPort = PORT+1;
     static bool const isWebsocketEnabled = ENABLE_WEBSOCKET_MONITOR;
     static bool const isWebGUIEnabled = ENABLE_WEBGUI;
 
