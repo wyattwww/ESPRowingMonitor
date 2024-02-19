@@ -71,6 +71,11 @@ void NetworkService::update()
         });
         ElegantOTA.begin(&otaServer);    // Start ElegantOTA
         otaServer.begin();
+    
+        ElegantOTA.setID(to_string(HW_VERSION).c_str());
+        ElegantOTA.setFWVersion(to_string(FW_VERSION).c_str());
+        ElegantOTA.setTitle("SwellSync Updater");
+        
         Serial.println("HTTP OTA server started");
 
         NetworkService::isServerStarted = true;

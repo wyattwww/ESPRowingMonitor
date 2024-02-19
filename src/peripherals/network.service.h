@@ -1,7 +1,7 @@
 #include "settings.h"
 
 #include <string>
-#include <ElegantOTA.h>
+#include <ElegantOTAPro.h>
 
 #include "AsyncTCP.h"
 #include "ESPAsyncWebServer.h"
