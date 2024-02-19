@@ -76,7 +76,7 @@
 #define UPDATE_DEBUG 1
 #define ESP32 1
 
-#define HW_VERSION 1.0
-#define FW_VERSION 1.0
+#define HW_VERSION 20240218
+#define FW_VERSION 5.0
 
 // NOLINTEND(cppcoreguidelines-macro-usage)

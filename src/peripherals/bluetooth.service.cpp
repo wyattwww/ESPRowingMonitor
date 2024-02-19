@@ -670,13 +670,13 @@ void BluetoothService::setupServices()
         ->setValue("Swell City");
     deviceInfoService
         ->createCharacteristic(modelNumberSvcUuid, NIMBLE_PROPERTY::READ)
-        ->setValue("Swell Monitor");
+        ->setValue("SwellSync");
     deviceInfoService
         ->createCharacteristic(serialNumberSvcUuid, NIMBLE_PROPERTY::READ)
-        ->setValue("20231015");
+        ->setValue(to_string(HW_VERSION).c_str());
     deviceInfoService
         ->createCharacteristic(softwareNumberSvcUuid, NIMBLE_PROPERTY::READ)
-        ->setValue("4.1.0.1");
+        ->setValue(to_string(FW_VERSION).c_str());
 
     Log.verboseln("Starting BLE Service");
 
